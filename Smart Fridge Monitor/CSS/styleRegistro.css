@@ -1,0 +1,109 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #121212;
+    color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.containerRegistro {
+    background: #1e1e1e;
+    border-radius: 16px;
+    padding: 50px;
+    width: 100%;
+    max-width: 480px; /* più grande come richiesto */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+.registroHeader {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.registroHeader h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #FFD966;
+}
+
+.registroHeader p {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.RegistroForm {
+    margin-bottom: 20px;
+}
+
+.RegistroForm label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ccc;
+}
+
+.RegistroForm input {
+    width: 100%;
+    padding: 12px;
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+.RegistroForm input:focus {
+    outline: none;
+    border-color: #FFD966;
+}
+
+.registroButton {
+    width: 100%;
+    padding: 12px;
+    background: #FFD966;
+    border: none;
+    border-radius: 8px;
+    color: #121212;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.registroButton:hover {
+    background: #e5c358;
+}
+
+.registroToggle {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+}
+
+.registroToggle a {
+    color: #FFD966;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Mobile - nessuna sfasatura */
+@media (max-width: 480px) {
+    .containerRegistro {
+        padding: 20px;
+        max-width: 100%;
+        border-radius: 0;
+    }
+}

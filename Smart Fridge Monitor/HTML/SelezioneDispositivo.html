@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fridge - Scegli Dispositivo</title>
+    <link rel="stylesheet" href="../CSS/styleSelezione.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .device-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .device-card:hover { transform: scale(1.05); }
+        .device-card.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 6px rgba(255,217,102,0.3);
+        }
+        .device-card.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+        .device-icon {
+            font-size: 90px;
+            margin-bottom: 20px;
+        }
+        .device-card h2 {
+            font-size: 24px;
+            margin: 10px 0;
+            color: var(--text-primary);
+        }
+        .device-card p {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+        .device-card.disabled p { color: #888; }
+    </style>
+</head>
+<body>
+    <div class="containerSito" style="flex-direction:column; justify-content:center; align-items:center; min-height:100vh; background:var(--bg-primary);">
+        
+        <div class="header" style="width:100%; max-width:1200px; margin-bottom:40px;">
+            <div class="header-left">
+                <div class="logo-placeholder">
+                    <img src="https://via.placeholder.com/48x48/FFD966/121212?text=❄️" alt="Logo">
+                    <h1>Smart Fridge</h1>
+                </div>
+                <p>Seleziona il dispositivo da monitorare</p>
+            </div>
+            <div class="header-right">
+                <button onclick="window.location.href='../HTML/registro.html'" class="logout-btn">ESCI</button>
+            </div>
+        </div>
+
+        <h1 style="font-size:32px; color:var(--accent-primary); text-align:center; margin-bottom:50px;">Scegli il dispositivo</h1>
+
+        <div class="devices-grid">
+            <!-- Frigo -->
+            <div class="device-card active" onclick="selectDevice('frigo')">
+                <div class="device-icon">❄️</div>
+                <h2>Frigorifero</h2>
+                <p>Disponibile ora</p>
+            </div>
+            <!-- Forno -->
+            <div class="device-card disabled">
+                <div class="device-icon">🍳</div>
+                <h2>Forno</h2>
+                <p>Prossimamente</p>
+            </div>
+            <!-- Microonde -->
+            <div class="device-card disabled">
+                <div class="device-icon">📻</div>
+                <h2>Microonde</h2>
+                <p>Prossimamente</p>
+            </div>
+            <!-- Tostapane -->
+            <div class="device-card disabled">
+                <div class="device-icon">🍞</div>
+                <h2>Tostapane</h2>
+                <p>Prossimamente</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectDevice(type) {
+            if (type === 'frigo') {
+                window.location.href = '../HTML/ConnettiFrigo.html';
+            }
+        }
+    </script>
+</body>
+</html>
