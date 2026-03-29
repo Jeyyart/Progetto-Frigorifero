@@ -1,5 +1,5 @@
 {
   "routes": [
-    { "src": "/", "dest": "Smart Fridge Monitor/HTML/Registrazione.html" }
+    { "src": "/", "dest": "/HTML/registro.html" }
   ]
 }
