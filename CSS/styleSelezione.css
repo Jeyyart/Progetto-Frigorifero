@@ -1,0 +1,58 @@
+:root {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --accent: #ffd966;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: #f0f0f0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    padding: 40px;
+}
+
+.device-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 50px 30px;
+    text-align: center;
+    transition: 0.3s;
+    border: 3px solid transparent;
+}
+
+.device-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 25px rgba(255,217,102,0.4);
+}
+
+.device-card.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.device-icon { font-size: 110px; margin-bottom: 25px; }
+.device-card h2 { font-size: 28px; margin-bottom: 8px; }
+.device-card p { color: var(--accent); font-weight: 600; }
+
+/* Bottone ESCI uguale a Dashboard */
+.logout-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+}
