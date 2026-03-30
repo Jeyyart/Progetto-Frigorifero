@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>NEXORA Smart Fridge - Scanner Telefono</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>NEXORA Smart Fridge - Scanner</title>
     <link rel="stylesheet" href="../CSS/styleScanTelefono.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -12,11 +12,8 @@
 <body>
     <div class="scan-container">
         <div class="header-scan">
-            <div class="logo-placeholder">
-                <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
-                <h1>NEXORA Smart Fridge</h1>
-            </div>
-            <p>Scanner QR Frigorifero • Solo telefono</p>
+            <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
+            <h1>NEXORA Smart Fridge</h1>
         </div>
 
         <h1 class="scan-title">Inquadra il QR del frigorifero</h1>
@@ -24,11 +21,11 @@
         <div id="qr-reader" class="qr-reader-box"></div>
         
         <div class="scan-controls">
-            <button onclick="startScanner()" id="scanBtnScan" class="registroButton">Avvia Scanner</button>
-            <button onclick="stopScanner()" id="stopBtnScan" class="registroButton stop-btn" style="display:none;">Ferma Scanner</button>
+            <button onclick="startScanner()" id="scanBtnScan" class="registroButton">📷 Avvia Scanner</button>
+            <button onclick="stopScanner()" id="stopBtnScan" class="registroButton stop-btn" style="display:none;">⏹️ Ferma Scanner</button>
         </div>
 
-        <p class="scan-hint">Posiziona il QR del frigorifero all'interno del riquadro</p>
+        <p class="scan-hint">Posiziona il QR all'interno del riquadro</p>
     </div>
 </body>
 </html>

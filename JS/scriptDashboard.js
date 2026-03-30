@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO');
+console.log('✅ scriptDashboard.js CARICATO - versione con modelli FRIGO-CHIUSO e FRIGO-APERTO');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -72,6 +72,7 @@ async function fetchAndUpdate() {
         const data = res.ok ? await res.json() : mockReadings;
         readingsHistory = processReadings(Array.isArray(data) ? data : [data]);
     } catch(e) {
+        console.warn('⚠️ API non raggiungibile → uso mock');
         readingsHistory = processReadings(mockReadings);
     }
     updateMetrics(readingsHistory);
@@ -89,13 +90,21 @@ function initChart() {
     chart = new Chart(ctx, {
         type: 'line',
         data: { labels: [], datasets: [{ data: [], tension: 0.3, fill: true, borderWidth: 3 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-            scales: { y: { grid: { color: '#333' }, ticks: { color: '#ccc' } }, x: { grid: { color: '#333' }, ticks: { color: '#ccc' } } }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#333' }, ticks: { color: '#ccc' } },
+                x: { grid: { color: '#333' }, ticks: { color: '#ccc' } }
+            }
         }
     });
 }
-/* === 3D MODELLI === */
+
+/* === 3D MODELLI (PERCORSI AGGIORNATI) === */
 function init3D() {
+    console.log('🚀 Inizializzazione 3D...');
     const canvas = document.getElementById('three-canvas');
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
@@ -115,20 +124,29 @@ function init3D() {
 
     const loader = new THREE.GLTFLoader();
 
-    // Frigo chiuso
-    loader.load('../BlenderModels/FRIGO-CHUSO.glb', gltf => {
-        modelClosed = gltf.scene;
-        modelClosed.scale.set(1.8, 1.8, 1.8);
-        scene.add(modelClosed);
-    }, undefined, err => console.warn('Closed model non trovato', err));
+    // === MODELLI AGGIORNATI CON I TUOI FILE ===
+    loader.load('../BlenderModels/FRIGO-CHIUSO.glb', 
+        gltf => {
+            console.log('✅ Frigo CHIUSO caricato');
+            modelClosed = gltf.scene;
+            modelClosed.scale.set(1.8, 1.8, 1.8);
+            scene.add(modelClosed);
+        }, 
+        undefined, 
+        err => console.error('❌ Errore caricamento FRIGO-CHIUSO.glb →', err)
+    );
 
-    // Frigo aperto
-    loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
-        modelOpen = gltf.scene;
-        modelOpen.scale.set(1.8, 1.8, 1.8);
-        modelOpen.visible = false;
-        scene.add(modelOpen);
-    }, undefined, err => console.warn('Open model non trovato', err));
+    loader.load('../BlenderModels/FRIGO-APERTO.glb', 
+        gltf => {
+            console.log('✅ Frigo APERTO caricato');
+            modelOpen = gltf.scene;
+            modelOpen.scale.set(1.8, 1.8, 1.8);
+            modelOpen.visible = false;
+            scene.add(modelOpen);
+        }, 
+        undefined, 
+        err => console.error('❌ Errore caricamento FRIGO-APERTO.glb →', err)
+    );
 
     // Controlli mouse
     let isDragging = false, prevX = 0;
@@ -183,10 +201,11 @@ function initAll() {
 
     initChart();
     addTabListeners();
-    init3D();
+    init3D();                    // ← 3D ora con i tuoi file
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
+    // TEMA + LOGOUT
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
