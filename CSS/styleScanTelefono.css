@@ -1,0 +1,70 @@
+:root {
+    --bg: #0f0f0f;
+    --accent: #22c55e;
+}
+
+[data-theme="light"] {
+    --bg: #f8fafc;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: white;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.scan-container {
+    width: 100%;
+    max-width: 460px;
+    padding: 20px;
+    text-align: center;
+}
+
+.header-scan {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.logo-img { width: 42px; height: 42px; }
+
+.qr-reader-box {
+    width: 100%;
+    max-width: 380px;
+    height: 380px;
+    margin: 30px auto;
+    border: 6px dashed var(--accent);
+    border-radius: 24px;
+    overflow: hidden;
+    background: #111;
+}
+
+.scan-title {
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.scan-controls button {
+    width: 100%;
+    max-width: 320px;
+    margin: 10px auto;
+    display: block;
+}
+
+.stop-btn { background: #e74c3c !important; }
+
+.scan-hint {
+    color: #aaa;
+    font-size: 15px;
+    margin-top: 20px;
+}

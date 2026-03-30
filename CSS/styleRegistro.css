@@ -1,109 +1,112 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
+:root { --bg: #121212; --card: #1e1e1e; --accent: #22c55e; --text: #f0f0f0; --muted: #aaa; }
+[data-theme="light"] { --bg: #f8fafc; --card: #ffffff; --accent: #22c55e; --text: #111827; --muted: #64748b; }
 
-body {
-    font-family: 'Inter', sans-serif;
-    background: #121212;
-    color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 
-.containerRegistro {
-    background: #1e1e1e;
-    border-radius: 16px;
-    padding: 50px;
-    width: 100%;
-    max-width: 480px; /* più grande come richiesto */
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-}
+.global-logo { position: absolute; top: 30px; left: 40px; display: flex; align-items: center; gap: 14px; z-index: 100; }
+.global-logo .logo-img { width: 62px; height: 62px; }
+.global-logo h1 { font-size: 28px; font-weight: 700; color: var(--accent); }
+
+.theme-toggle-global { position: absolute; top: 30px; right: 30px; background: #1a1a1a; border: 2px solid #444; color: #fff; width: 56px; height: 56px; border-radius: 14px; font-size: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.5); z-index: 200; }
+.theme-toggle-global:hover { background: #22c55e; color: #111; }
+
+.containerRegistro { background: var(--card); border-radius: 28px; padding: 60px 50px 50px; width: 100%; max-width: 460px; box-shadow: 0 25px 60px rgba(0,0,0,0.7); }
 
 .registroHeader {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 45px;
+}
+
+.logo-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.logo-img {
+    width: 62px;
+    height: 62px;
+    border-radius: 12px;
 }
 
 .registroHeader h1 {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #FFD966;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1.2px;
 }
 
 .registroHeader p {
-    color: #aaa;
-    font-size: 14px;
+    color: var(--muted);
+    font-size: 15.5px;
+    margin-top: 6px;
 }
 
 .RegistroForm {
-    margin-bottom: 20px;
+    margin-bottom: 26px;
 }
 
 .RegistroForm label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 9px;
     font-size: 14px;
-    font-weight: 500;
-    color: #ccc;
+    font-weight: 600;
+    color: var(--muted);
 }
 
 .RegistroForm input {
     width: 100%;
-    padding: 12px;
+    padding: 18px 22px;
     background: #2a2a2a;
-    border: 1px solid #3a3a3a;
-    border-radius: 8px;
-    color: white;
-    font-size: 14px;
+    border: 2px solid #3a3a3a;
+    border-radius: 14px;
+    color: var(--text);
+    font-size: 17px;
+    transition: border 0.3s;
 }
 
 .RegistroForm input:focus {
+    border-color: var(--accent);
     outline: none;
-    border-color: #FFD966;
+}
+
+[data-theme="light"] .RegistroForm input {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #111827;
 }
 
 .registroButton {
     width: 100%;
-    padding: 12px;
-    background: #FFD966;
+    padding: 19px;
+    background: var(--accent);
     border: none;
-    border-radius: 8px;
-    color: #121212;
-    font-weight: 600;
-    font-size: 16px;
+    border-radius: 16px;
+    color: #111;
+    font-size: 19px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s;
+    margin-top: 12px;
+    transition: all 0.3s;
 }
 
 .registroButton:hover {
-    background: #e5c358;
+    background: #16a34a;
+    transform: translateY(-2px);
 }
 
 .registroToggle {
     text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #aaa;
+    margin-top: 32px;
+    font-size: 15px;
+    color: var(--muted);
 }
 
 .registroToggle a {
-    color: #FFD966;
+    color: var(--accent);
+    font-weight: 600;
     text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-/* Mobile - nessuna sfasatura */
-@media (max-width: 480px) {
-    .containerRegistro {
-        padding: 20px;
-        max-width: 100%;
-        border-radius: 0;
-    }
 }

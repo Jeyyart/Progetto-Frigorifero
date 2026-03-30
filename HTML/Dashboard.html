@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Fridge Dashboard</title>
+    <title>NEXORA Smart Fridge Dashboard</title>
     <link rel="stylesheet" href="../CSS/styleDashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/loaders/GLTFLoader.js"></script>
     <script src="../JS/scriptDashboard.js" defer></script>
 </head>
@@ -22,16 +22,27 @@
             <div class="header">
                 <div class="header-left">
                     <div class="logo-placeholder">
-                        <img src="https://via.placeholder.com/48x48/FFD966/121212?text=❄️" alt="Logo">
-                        <h1>Smart Fridge Dashboard</h1>
+                        <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
+                        <h1>NEXORA Smart Fridge Dashboard</h1>
                     </div>
-                    <p>Monitoraggio in tempo reale</p>
                 </div>
                 <div class="header-right">
-                    <button id="themeToggleBtn" class="theme-toggle">☀️</button>
+                    <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
                     <button id="logoutBtn" class="logout-btn">ESCI</button>
+                    <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
                     <div class="statoConnessione connesso" id="visioneStato">Connesso</div>
                 </div>
+            </div>
+
+            <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
+
+            <div id="adminPanel" class="admin-panel" style="display:none;margin-bottom:20px;">
+                <label>🔑 Modalità Admin – Seleziona ID Frigorifero</label>
+                <select id="adminIdSelect" onchange="switchDeviceId(this.value)" class="admin-select">
+                    <option value="FRG-987654">FRG-987654 (Principale)</option>
+                    <option value="FRG-111222">FRG-111222 (Cucina 2)</option>
+                    <option value="FRG-333444">FRG-333444 (Garage)</option>
+                </select>
             </div>
 
             <div class="metrics-grid">
