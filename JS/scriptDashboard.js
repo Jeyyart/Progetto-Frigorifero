@@ -116,14 +116,14 @@ function init3D() {
     const loader = new THREE.GLTFLoader();
 
     // Frigo chiuso
-    loader.load('../BlenderModels/fridge-closed.glb', gltf => {
+    loader.load('../BlenderModels/FRIGO-CHUSO.glb', gltf => {
         modelClosed = gltf.scene;
         modelClosed.scale.set(1.8, 1.8, 1.8);
         scene.add(modelClosed);
     }, undefined, err => console.warn('Closed model non trovato', err));
 
     // Frigo aperto
-    loader.load('../BlenderModels/fridge-open.glb', gltf => {
+    loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
         modelOpen = gltf.scene;
         modelOpen.scale.set(1.8, 1.8, 1.8);
         modelOpen.visible = false;
