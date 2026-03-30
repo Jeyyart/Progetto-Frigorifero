@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <!-- OBJLoader corretto per i tuoi file .obj -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/loaders/OBJLoader.js"></script>
+    <!-- LOADER CORRETTO - questo risolve l'errore GLTFLoader -->
+    <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="../JS/scriptDashboard.js" defer></script>
 </head>
 <body>
@@ -37,6 +37,7 @@
 
             <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
 
+            <!-- resto della dashboard invariato (metriche, grafico, timeline) -->
             <div id="adminPanel" class="admin-panel" style="display:none;margin-bottom:20px;">
                 <label>🔑 Modalità Admin – Seleziona ID Frigorifero</label>
                 <select id="adminIdSelect" onchange="switchDeviceId(this.value)" class="admin-select">
