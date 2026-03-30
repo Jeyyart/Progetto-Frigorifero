@@ -7,7 +7,7 @@ function startScanner() {
     html5QrCode = new Html5Qrcode("qr-reader");
     html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 12, qrbox: { width: 280, height: 280 } },
+        { fps: 15, qrbox: { width: 300, height: 300 } },
         (decodedText) => {
             stopScanner();
             if (decodedText.includes('FRG-') || decodedText.length > 6) {
@@ -18,7 +18,7 @@ function startScanner() {
             }
         },
         () => {}
-    ).catch(err => alert('Errore fotocamera: ' + err));
+    ).catch(err => console.error('Errore fotocamera:', err));
 }
 
 function stopScanner() {
@@ -33,4 +33,8 @@ function stopScanner() {
 window.onload = () => {
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
+    // Avvio automatico dopo 800ms (per permettere il permesso fotocamera)
+    setTimeout(() => {
+        startScanner();
+    }, 800);
 };

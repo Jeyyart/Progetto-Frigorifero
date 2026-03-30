@@ -1,5 +1,4 @@
 :root { --bg: #0f0f0f; --accent: #22c55e; }
-
 [data-theme="light"] { --bg: #f8fafc; }
 
 body {
@@ -12,18 +11,15 @@ body {
     width: 100vw;
     overflow: hidden;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
 }
 
 .scan-container {
     width: 100%;
     height: 100%;
-    max-width: 100%;
-    padding: 20px;
+    padding: 20px 15px;
     display: flex;
     flex-direction: column;
-    text-align: center;
 }
 
 .header-scan {
@@ -31,43 +27,45 @@ body {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
-.logo-img { width: 48px; height: 48px; }
+.logo-img { width: 52px; height: 52px; }
 
 .scan-title {
-    font-size: 28px;
+    font-size: 26px;
     color: var(--accent);
-    margin-bottom: 20px;
+    text-align: center;
     font-weight: 700;
+    margin-bottom: 15px;
 }
 
 .qr-reader-box {
     flex: 1;
-    max-height: 420px;
-    margin: 10px auto;
-    border: 8px dashed var(--accent);
+    margin: 0 auto 20px;
+    border: 10px dashed var(--accent);
     border-radius: 30px;
     overflow: hidden;
     background: #111;
     width: 100%;
-    max-width: 380px;
+    max-width: 420px;
+    box-shadow: 0 0 30px rgba(34,197,94,0.4);
 }
 
 .scan-controls button {
     width: 100%;
-    max-width: 360px;
-    margin: 12px auto;
-    padding: 18px;
-    font-size: 20px;
-    border-radius: 16px;
+    max-width: 380px;
+    margin: 8px auto;
+    padding: 22px;
+    font-size: 22px;
+    border-radius: 20px;
+    font-weight: 700;
 }
 
 .stop-btn { background: #e74c3c !important; }
 
 .scan-hint {
+    text-align: center;
     color: #aaa;
-    font-size: 15px;
-    margin-top: 10px;
+    font-size: 16px;
 }
