@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - versione con modelli FRIGO-CHIUSO e FRIGO-APERTO');
+console.log('✅ scriptDashboard.js CARICATO - VERSIONE GLB');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -43,7 +43,6 @@ function updateChart() {
     const labels = readingsHistory.map(r => formatTime(r.timestamp));
     const tempData = readingsHistory.map(r => r.temperature);
     const humData = readingsHistory.map(r => r.humidity);
-
     const lineColor = currentChartType === 'temperature' ? '#22c55e' : '#22d3ee';
     chart.data.labels = labels;
     chart.data.datasets[0].data = currentChartType === 'temperature' ? tempData : humData;
@@ -102,9 +101,29 @@ function initChart() {
     });
 }
 
-/* === 3D MODELLI (PERCORSI AGGIORNATI) === */
+/* === 3D GLB - attesa robusta === */
+let retryCount = 0;
+const MAX_RETRIES = 20;
+
 function init3D() {
-    console.log('🚀 Inizializzazione 3D...');
+    console.log('🚀 Inizializzazione 3D GLB...');
+
+    if (typeof THREE === 'undefined' || typeof THREE.GLTFLoader === 'undefined') {
+        retryCount++;
+        if (retryCount < MAX_RETRIES) {
+            console.log(`⏳ GLTFLoader non ancora pronto, riprovo tra 300ms... (${retryCount}/${MAX_RETRIES})`);
+            setTimeout(init3D, 300);
+            return;
+        } else {
+            console.error('❌ GLTFLoader non si è caricato dopo 20 tentativi.');
+            const hint = document.querySelector('.model-hint');
+            if (hint) hint.innerHTML = '❌ Modelli 3D non caricati.<br>Controlla la console (F12)';
+            return;
+        }
+    }
+
+    console.log('✅ GLTFLoader pronto, carico i modelli...');
+
     const canvas = document.getElementById('three-canvas');
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
@@ -114,41 +133,32 @@ function init3D() {
     scene.background = new THREE.Color(0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.2, 3.5);
+    camera.position.set(0, 1.5, 4);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambient);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(10, 15, 10);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dirLight.position.set(5, 10, 8);
     scene.add(dirLight);
 
     const loader = new THREE.GLTFLoader();
 
-    // === MODELLI AGGIORNATI CON I TUOI FILE ===
-    loader.load('../BlenderModels/FRIGO-CHIUSO.glb', 
-        gltf => {
-            console.log('✅ Frigo CHIUSO caricato');
-            modelClosed = gltf.scene;
-            modelClosed.scale.set(1.8, 1.8, 1.8);
-            scene.add(modelClosed);
-        }, 
-        undefined, 
-        err => console.error('❌ Errore caricamento FRIGO-CHIUSO.glb →', err)
-    );
+    loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => {
+        console.log('✅ Frigo CHIUSO (.glb) caricato');
+        modelClosed = gltf.scene;
+        modelClosed.scale.set(1.8, 1.8, 1.8);
+        scene.add(modelClosed);
+    }, undefined, err => console.error('❌ FRIGO-CHIUSO.glb →', err));
 
-    loader.load('../BlenderModels/FRIGO-APERTO.glb', 
-        gltf => {
-            console.log('✅ Frigo APERTO caricato');
-            modelOpen = gltf.scene;
-            modelOpen.scale.set(1.8, 1.8, 1.8);
-            modelOpen.visible = false;
-            scene.add(modelOpen);
-        }, 
-        undefined, 
-        err => console.error('❌ Errore caricamento FRIGO-APERTO.glb →', err)
-    );
+    loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
+        console.log('✅ Frigo APERTO (.glb) caricato');
+        modelOpen = gltf.scene;
+        modelOpen.scale.set(1.8, 1.8, 1.8);
+        modelOpen.visible = false;
+        scene.add(modelOpen);
+    }, undefined, err => console.error('❌ FRIGO-APERTO.glb →', err));
 
-    // Controlli mouse
+    // Rotazione mouse
     let isDragging = false, prevX = 0;
     canvas.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; });
     window.addEventListener('mouseup', () => isDragging = false);
@@ -201,11 +211,10 @@ function initAll() {
 
     initChart();
     addTabListeners();
-    init3D();                    // ← 3D ora con i tuoi file
+    init3D();
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
-    // TEMA + LOGOUT
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
