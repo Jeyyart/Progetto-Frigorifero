@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Scanner</title>
     <link rel="stylesheet" href="../CSS/styleScanTelefono.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,16 +16,17 @@
             <h1>NEXORA Smart Fridge</h1>
         </div>
 
-        <h1 class="scan-title">Inquadra il QR del frigorifero</h1>
-        
-        <div id="qr-reader" class="qr-reader-box"></div>
-        
-        <div class="scan-controls">
-            <button onclick="startScanner()" id="scanBtnScan" class="registroButton">📷 Avvia Scanner</button>
-            <button onclick="stopScanner()" id="stopBtnScan" class="registroButton stop-btn" style="display:none;">⏹️ Ferma Scanner</button>
+        <div class="scan-main">
+            <div class="qr-reader-box">
+                <div id="qr-reader"></div>
+            </div>
+            <div class="scan-controls">
+                <button onclick="startScanner()" id="scanBtnScan" class="registroButton">📷 Avvia Scanner</button>
+                <button onclick="stopScanner()" id="stopBtnScan" class="registroButton stop-btn" style="display:none;">⏹️ Ferma Scanner</button>
+            </div>
         </div>
 
-        <p class="scan-hint">Posiziona il QR all'interno del riquadro verde</p>
+        <p class="scan-hint">Inquadra il QR del frigorifero</p>
     </div>
 </body>
 </html>

@@ -38,15 +38,14 @@ body {
     height: 52px;
 }
 
-.scan-title {
+h1 {
     font-size: 26px;
     color: var(--accent);
-    text-align: center;
     font-weight: 700;
-    flex-shrink: 0;
+    margin: 0;
 }
 
-/* Contenitore principale per camera e controlli (usato in landscape) */
+/* Contenitore principale per camera e controlli */
 .scan-main {
     flex: 1;
     display: flex;
@@ -55,6 +54,7 @@ body {
     min-height: 0;
 }
 
+/* Riquadro della fotocamera: sempre quadrato */
 .qr-reader-box {
     position: relative;
     margin: 0 auto;
@@ -64,7 +64,7 @@ body {
     background: #111;
     width: 100%;
     max-width: 500px;
-    aspect-ratio: 1 / 1;          /* sempre quadrato */
+    aspect-ratio: 1 / 1;          /* forza quadrato */
 }
 
 #qr-reader {
@@ -112,17 +112,16 @@ body {
     flex-shrink: 0;
 }
 
-/* ORIZZONTALE: camera quadrata a sinistra, controlli a destra */
+/* Modalità orizzontale (landscape) */
 @media (orientation: landscape) {
     .scan-container {
-        flex-direction: column;
         padding: 15px;
     }
     .scan-main {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 30px;
+        gap: 40px;
     }
     .qr-reader-box {
         flex: 0 0 auto;
@@ -130,6 +129,7 @@ body {
         max-width: 50vh;
         height: auto;
         margin: 0;
+        aspect-ratio: 1 / 1;
     }
     .scan-controls {
         flex-direction: column;
