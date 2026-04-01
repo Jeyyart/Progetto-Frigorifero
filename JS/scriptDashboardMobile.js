@@ -139,7 +139,7 @@ function init3D() {
     scene.background = new THREE.Color(0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.8, 14.0);
+    camera.position.set(0, 1.8, 20.0);
     camera.lookAt(0, 0, 0);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
