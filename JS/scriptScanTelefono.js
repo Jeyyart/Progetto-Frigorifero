@@ -1,42 +1,38 @@
 let html5QrCode = null;
 
-// Funzione per avviare lo scanner con zoom 1x
 function startScanner() {
     document.getElementById('scanBtnScan').style.display = 'none';
     document.getElementById('stopBtnScan').style.display = 'block';
 
     html5QrCode = new Html5Qrcode("qr-reader");
+    
     const config = {
         fps: 15,
-        qrbox: { width: 280, height: 280 },  // allineato al riquadro tratteggiato
+        qrbox: { width: 280, height: 280 },
         videoConstraints: {
             facingMode: "environment",
-            // Imposta zoom a 1 (se supportato)
-            advanced: [{ zoom: 1 }]
+            advanced: [{ zoom: 1.0 }],
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
         }
     };
 
     html5QrCode.start(
-        { facingMode: "environment" },  // fallback se advanced non funziona
+        { facingMode: "environment" },
         config,
         (decodedText) => {
-            // Riconoscimento specifico NEXORA: ID deve iniziare con "FRG-"
             if (decodedText && decodedText.startsWith("FRG-")) {
                 stopScanner();
                 alert(`✅ QR riconosciuto!\nID: ${decodedText}`);
                 window.location.href = `../HTML/Dashboard.html?id=${decodedText}`;
             } else {
-                // QR non valido: continua a scannerizzare, ma mostra un avviso temporaneo
                 const msgDiv = document.getElementById('scanMessage') || createMessageDiv();
                 msgDiv.textContent = '⚠️ QR non valido. Inquadra il codice NEXORA (FRG-XXXXXX)';
                 msgDiv.style.display = 'block';
                 setTimeout(() => { msgDiv.style.display = 'none'; }, 2000);
             }
         },
-        (errorMessage) => {
-            // Ignora errori normali di lettura
-            // console.log(errorMessage);
-        }
+        () => {}
     ).catch(err => {
         console.error('Errore fotocamera:', err);
         alert('Impossibile accedere alla fotocamera. Verifica i permessi.');
@@ -45,7 +41,6 @@ function startScanner() {
     });
 }
 
-// Crea un div per i messaggi temporanei (se non esiste)
 function createMessageDiv() {
     let msg = document.getElementById('scanMessage');
     if (!msg) {
@@ -79,16 +74,12 @@ function stopScanner() {
 window.onload = () => {
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
-    // Avvio automatico dopo 500ms per dare tempo al layout
-    setTimeout(() => {
-        startScanner();
-    }, 500);
+    setTimeout(() => startScanner(), 500);
 };
 
-// Assicura che lo scanner si riadatti al ridimensionamento (es. rotazione)
 window.addEventListener('resize', () => {
     if (html5QrCode && html5QrCode.isScanning) {
-        // Forza il riadattamento del riquadro
-        html5QrCode.applyVideoConstraints({});
+        // Riavvia lo scanner per adattarsi al nuovo orientamento
+        stopScanner().then(() => startScanner());
     }
 });
