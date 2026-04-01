@@ -148,7 +148,8 @@ function init3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
     camera.position.set(0, 1.8, 14.0);

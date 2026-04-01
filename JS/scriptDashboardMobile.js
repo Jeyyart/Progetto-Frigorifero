@@ -6,7 +6,7 @@ let readingsHistory = [];
 let modelGroup = null;
 let modelClosed = null;
 let modelOpen = null;
-let currentModel = null;         // riferimento al modello attualmente nel gruppo
+let currentModel = null;
 let scene = null;
 let camera = null;
 let renderer = null;
@@ -14,8 +14,11 @@ let rotationY = 0;
 let autoRotateSpeed = 0.002;
 let currentUser = null;
 let currentDeviceId = null;
-let modelsLoaded = false;        // entrambi i modelli caricati?
-let pendingDoorState = false;    // stato in attesa se modelli non pronti
+let modelsLoaded = false;
+let pendingDoorState = false;
+let targetCameraZ = 20.0;
+const closedCameraZ = 20.0;
+const openCameraZ = 26.0;       // più lontano per modello aperto
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -48,9 +51,14 @@ function updateMetrics(readings) {
     
     if (modelsLoaded) {
         switchModel(isOpen);
+        updateCameraZoom(isOpen);
     } else {
         pendingDoorState = isOpen;
     }
+}
+
+function updateCameraZoom(isOpen) {
+    targetCameraZ = isOpen ? openCameraZ : closedCameraZ;
 }
 
 function updateChart() {
@@ -78,7 +86,6 @@ function addTabListeners() {
     });
 }
 
-// Swipe per telefono
 function addSwipeListener() {
     const swipeArea = document.getElementById('chartSwipeArea');
     let startX = 0;
@@ -147,10 +154,11 @@ function init3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.8, 20.0);
+    camera.position.set(0, 1.8, closedCameraZ);
     camera.lookAt(0, 0, 0);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -164,7 +172,6 @@ function init3D() {
 
     const loader = new THREE.GLTFLoader();
     
-    // Carica modello chiuso
     loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => {
         modelClosed = gltf.scene;
         modelClosed.scale.set(1.8, 1.8, 1.8);
@@ -172,7 +179,6 @@ function init3D() {
         checkModelsReady();
     });
     
-    // Carica modello aperto
     loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
         modelOpen = gltf.scene;
         modelOpen.scale.set(1.8, 1.8, 1.8);
@@ -183,12 +189,11 @@ function init3D() {
     function checkModelsReady() {
         if (modelClosed && modelOpen && !modelsLoaded) {
             modelsLoaded = true;
-            // Applica lo stato della porta in attesa
             switchModel(pendingDoorState);
+            updateCameraZoom(pendingDoorState);
         }
     }
 
-    // Touch drag per ruotare
     let isDragging = false, prevX = 0;
     canvas.addEventListener('touchstart', (e) => {
         isDragging = true;
@@ -205,7 +210,6 @@ function init3D() {
     canvas.addEventListener('touchend', () => {
         isDragging = false;
     });
-    // Mouse per debug su desktop
     canvas.addEventListener('mousedown', (e) => { isDragging = true; prevX = e.clientX; });
     window.addEventListener('mouseup', () => isDragging = false);
     canvas.addEventListener('mousemove', (e) => {
@@ -218,6 +222,14 @@ function init3D() {
         requestAnimationFrame(animate);
         rotationY += autoRotateSpeed;
         if (modelGroup) modelGroup.rotation.y = rotationY;
+        
+        const currentZ = camera.position.z;
+        const delta = targetCameraZ - currentZ;
+        if (Math.abs(delta) > 0.01) {
+            camera.position.z += delta * 0.1;
+            camera.lookAt(0, 0, 0);
+        }
+        
         renderer.render(scene, camera);
     }
     animate();
@@ -249,7 +261,6 @@ function initChart() {
         }
     });
 
-    // Adatta colori al tema
     const observer = new MutationObserver(() => {
         if (!chart) return;
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -258,12 +269,15 @@ function initChart() {
         chart.options.scales.y.grid.color = isLight ? '#cbd5e1' : '#333';
         chart.options.scales.x.grid.color = isLight ? '#cbd5e1' : '#333';
         chart.update();
+        
+        if (scene) {
+            scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
+        }
     });
     observer.observe(document.documentElement, { attributes: true });
 }
 
 function initAll() {
-    // Recupera parametro ID dall'URL se presente
     const urlParams = new URLSearchParams(window.location.search);
     currentDeviceId = urlParams.get('id');
 
@@ -285,7 +299,6 @@ function initAll() {
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
-    // Tema
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
