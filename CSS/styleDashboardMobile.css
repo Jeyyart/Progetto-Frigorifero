@@ -313,6 +313,32 @@ body {
     white-space: nowrap;
 }
 
+.timeline-events {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 14px;
+    font-size: 13px;
+}
+.timeline-event {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.timeline-event:last-child {
+    border-bottom: none;
+}
+.timeline-empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 12px;
+}
+[data-theme="light"] .timeline-events {
+    background: rgba(0,0,0,0.05);
+}
+[data-theme="light"] .timeline-event {
+    border-bottom-color: rgba(0,0,0,0.1);
+}
+
 /* Forza orientamento orizzontale */
 @media (orientation: portrait) {
     .dashboard-landscape {

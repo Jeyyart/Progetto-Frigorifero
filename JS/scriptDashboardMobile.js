@@ -16,9 +16,10 @@ let currentUser = null;
 let currentDeviceId = null;
 let modelsLoaded = false;
 let pendingDoorState = false;
-let targetCameraZ = 20.0;
-const closedCameraZ = 20.0;
-const openCameraZ = 26.0;       // più lontano per modello aperto
+let targetCameraZ = 24.0;          // più dezoomato
+const closedCameraZ = 24.0;        // distanza quando chiuso
+const openCameraZ = 30.0;          // più lontano per modello aperto
+const cameraY = 2.2;               // modello più in alto
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -32,22 +33,90 @@ function parseTimestamp(ts) {
 function processReadings(readings) {
     return readings.map(r => ({
         timestamp: parseTimestamp(r.timestame || r.timestamp),
-        temperature: Math.round(r.temperatura || r.temperature),
-        humidity: Math.round(r.umidita || r.humidity),
+        temperature: r.temperatura || r.temperature,
+        humidity: r.umidita || r.humidity,
         doorOpen: r.portaAperta || r.doorOpen
     }));
+}
+
+// --- Formattazione con un decimale, toglie .0 ---
+function formatValueWithDecimal(value) {
+    const rounded = Math.round(value * 10) / 10;
+    const str = rounded.toFixed(1);
+    return str.endsWith('.0') ? Math.round(rounded).toString() : str;
+}
+
+function formatTemperatureHumidity(temp, hum) {
+    return {
+        temp: formatValueWithDecimal(temp),
+        hum: formatValueWithDecimal(hum)
+    };
+}
+
+// --- Rilevamento cambi di stato della porta ---
+function getDoorStateChanges(readings) {
+    const changes = [];
+    for (let i = 1; i < readings.length; i++) {
+        const prev = readings[i-1];
+        const curr = readings[i];
+        if (prev.doorOpen !== curr.doorOpen) {
+            changes.push({
+                timestamp: curr.timestamp,
+                state: curr.doorOpen,
+                changedTo: curr.doorOpen ? 'aperta' : 'chiusa'
+            });
+        }
+    }
+    return changes;
+}
+
+function getLastStateDuration(readings, currentState) {
+    if (readings.length === 0) return 'dati non disponibili';
+    const changes = getDoorStateChanges(readings);
+    let lastChange = null;
+    for (let i = changes.length-1; i >= 0; i--) {
+        if (changes[i].state === currentState) {
+            lastChange = changes[i];
+            break;
+        }
+    }
+    if (!lastChange) {
+        lastChange = { timestamp: readings[0].timestamp, state: currentState };
+    }
+    const diffMs = Date.now() - lastChange.timestamp.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    let duration = '';
+    if (diffHours > 0) duration += `${diffHours}h `;
+    duration += `${diffMinutes}min`;
+    return duration;
+}
+
+function getTodayEvents(readings) {
+    const changes = getDoorStateChanges(readings);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return changes.filter(ev => ev.timestamp >= today && ev.timestamp < tomorrow)
+                  .map(ev => ({
+                      time: ev.timestamp.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }),
+                      action: ev.changedTo
+                  }));
 }
 
 function updateMetrics(readings) {
     if (!readings.length) return;
     const latest = readings[readings.length - 1];
-    document.getElementById('tempValue').textContent = latest.temperature;
-    document.getElementById('humidityValue').textContent = latest.humidity;
+    const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
+    document.getElementById('tempValue').textContent = temp;
+    document.getElementById('humidityValue').textContent = hum;
 
     const isOpen = latest.doorOpen;
     document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
     document.getElementById('doorCard').classList.toggle('open', isOpen);
-    document.getElementById('doorTime').textContent = isOpen ? 'Aperta da 12 min' : 'Chiusa da 2h 45m';
+    const duration = getLastStateDuration(readings, isOpen);
+    document.getElementById('doorTime').textContent = `${isOpen ? 'Aperta' : 'Chiusa'} da ${duration}`;
     
     if (modelsLoaded) {
         switchModel(isOpen);
@@ -73,6 +142,18 @@ function updateChart() {
     chart.data.datasets[0].backgroundColor = currentChartType === 'temperature' ? '#22c55e22' : '#22d3ee22';
     document.getElementById('chartTitle').textContent = currentChartType === 'temperature' ? 'Storico Temperatura' : 'Storico Umidità';
     chart.update('none');
+}
+
+function updateTimeline() {
+    const events = getTodayEvents(readingsHistory);
+    const timelineContainer = document.getElementById('timelineEvents');
+    if (!timelineContainer) return;
+    if (events.length === 0) {
+        timelineContainer.innerHTML = '<div class="timeline-empty">Nessuna apertura oggi</div>';
+        return;
+    }
+    const list = events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('');
+    timelineContainer.innerHTML = `<div class="timeline-events-list">${list}</div>`;
 }
 
 function addTabListeners() {
@@ -158,7 +239,7 @@ function init3D() {
     scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.8, closedCameraZ);
+    camera.position.set(0, cameraY, closedCameraZ);
     camera.lookAt(0, 0, 0);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -241,11 +322,6 @@ function init3D() {
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
     });
-}
-
-function updateTimeline() {
-    const hasOpenings = readingsHistory.some(r => r.doorOpen);
-    document.getElementById('timelineMessage').textContent = hasOpenings ? 'Aperture rilevate oggi' : 'Nessuna apertura oggi';
 }
 
 function initChart() {

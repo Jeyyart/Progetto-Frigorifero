@@ -239,6 +239,23 @@ body {
     font-weight: 700;
 }
 
+.timeline-events {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    font-size: 14px;
+}
+.timeline-event {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.timeline-empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 12px;
+}
+
 @media (max-width: 1024px) {
     .metrics-grid { grid-template-columns: 1fr; }
     .containerSito { flex-direction: column; }

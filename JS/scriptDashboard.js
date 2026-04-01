@@ -31,23 +31,87 @@ function processReadings(readings) {
     }));
 }
 
+function formatValueWithDecimal(value) {
+    const rounded = Math.round(value * 10) / 10;
+    const str = rounded.toFixed(1);
+    return str.endsWith('.0') ? Math.round(rounded).toString() : str;
+}
+
+function formatTemperatureHumidity(temp, hum) {
+    return {
+        temp: formatValueWithDecimal(temp),
+        hum: formatValueWithDecimal(hum)
+    };
+}
+
+function getDoorStateChanges(readings) {
+    const changes = [];
+    for (let i = 1; i < readings.length; i++) {
+        const prev = readings[i-1];
+        const curr = readings[i];
+        if (prev.doorOpen !== curr.doorOpen) {
+            changes.push({
+                timestamp: curr.timestamp,
+                state: curr.doorOpen,
+                changedTo: curr.doorOpen ? 'aperta' : 'chiusa'
+            });
+        }
+    }
+    return changes;
+}
+
+function getLastStateDuration(readings, currentState) {
+    if (readings.length === 0) return 'dati non disponibili';
+    const changes = getDoorStateChanges(readings);
+    let lastChange = null;
+    for (let i = changes.length-1; i >= 0; i--) {
+        if (changes[i].state === currentState) {
+            lastChange = changes[i];
+            break;
+        }
+    }
+    if (!lastChange) {
+        // Nessun cambio prima, usa la prima rilevazione
+        lastChange = { timestamp: readings[0].timestamp, state: currentState };
+    }
+    const diffMs = Date.now() - lastChange.timestamp.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    let duration = '';
+    if (diffHours > 0) duration += `${diffHours}h `;
+    duration += `${diffMinutes}min`;
+    return duration;
+}
+
+function getTodayEvents(readings) {
+    const changes = getDoorStateChanges(readings);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return changes.filter(ev => ev.timestamp >= today && ev.timestamp < tomorrow)
+                  .map(ev => ({
+                      time: ev.timestamp.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }),
+                      action: ev.changedTo
+                  }));
+}
+
+
+
 function updateMetrics(readings) {
     if (!readings.length) return;
     const latest = readings[readings.length - 1];
-    document.getElementById('tempValue').textContent = latest.temperature;
-    document.getElementById('humidityValue').textContent = latest.humidity;
+    const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
+    document.getElementById('tempValue').textContent = temp;
+    document.getElementById('humidityValue').textContent = hum;
 
     const isOpen = latest.doorOpen;
+    currentDoorState = isOpen;
     document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
     document.getElementById('doorCard').classList.toggle('open', isOpen);
-    document.getElementById('doorTime').textContent = isOpen ? 'Aperta da 12 min' : 'Chiusa da 2h 45m';
-    
-    // Aggiorna modello 3D (se modelli pronti)
-    if (modelsReady) {
-        switchModel(isOpen);
-    } else {
-        pendingDoorState = isOpen;
-    }
+    const duration = getLastStateDuration(readings, isOpen);
+    document.getElementById('doorTime').textContent = `${isOpen ? 'Aperta' : 'Chiusa'} da ${duration}`;
+
 }
 
 function updateChart() {
@@ -216,8 +280,15 @@ function init3D() {
 }
 
 function updateTimeline() {
-    const hasOpenings = readingsHistory.some(r => r.doorOpen);
-    document.getElementById('timelineMessage').textContent = hasOpenings ? 'Aperture rilevate oggi' : 'Nessuna apertura oggi';
+    const events = getTodayEvents(readingsHistory);
+    const timelineContainer = document.getElementById('timelineEvents');
+    if (!timelineContainer) return;
+    if (events.length === 0) {
+        timelineContainer.innerHTML = '<div class="timeline-empty">Nessuna apertura oggi</div>';
+        return;
+    }
+    const list = events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('');
+    timelineContainer.innerHTML = `<div class="timeline-events-list">${list}</div>`;
 }
 
 function initChart() {
