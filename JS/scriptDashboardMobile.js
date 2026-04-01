@@ -13,8 +13,8 @@ let rotationY = 0;
 let autoRotateSpeed = 0.002;
 let currentUser = null;
 let currentDeviceId = null;
-let modelsLoaded = false;
-let currentDoorState = false;
+let modelsLoadedCount = 0;      // contatore per entrambi i modelli
+let currentDoorState = false;   // stato porta (false = chiusa)
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -45,7 +45,7 @@ function updateMetrics(readings) {
     document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
     document.getElementById('doorCard').classList.toggle('open', isOpen);
     document.getElementById('doorTime').textContent = isOpen ? 'Aperta da 12 min' : 'Chiusa da 2h 45m';
-    update3DModel(isOpen);
+    update3DModel(isOpen);   // aggiorna modello se già caricato
 }
 
 function updateChart() {
@@ -122,7 +122,7 @@ function centerModel(model) {
 }
 
 function update3DModel(isOpen) {
-    if (!modelsLoaded) return;
+    // Chiamata solo quando entrambi i modelli sono caricati
     if (modelClosed && modelOpen) {
         modelClosed.visible = !isOpen;
         modelOpen.visible = isOpen;
@@ -139,7 +139,7 @@ function init3D() {
     scene.background = new THREE.Color(0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.8, 20.0);
+    camera.position.set(0, 1.8, 20.0);   // ← posizione richiesta
     camera.lookAt(0, 0, 0);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -153,30 +153,27 @@ function init3D() {
 
     const loader = new THREE.GLTFLoader();
     
+    // Carica modello chiuso (inizialmente invisibile)
     loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => {
         modelClosed = gltf.scene;
         modelClosed.scale.set(1.8, 1.8, 1.8);
         centerModel(modelClosed);
-        modelClosed.visible = false;
+        modelClosed.visible = false;   // invisibile fino a quando non sarà caricato anche l'altro
         modelGroup.add(modelClosed);
-        checkModelsReady();
+        modelsLoadedCount++;
+        if (modelsLoadedCount === 2) update3DModel(currentDoorState);
     });
     
+    // Carica modello aperto (inizialmente invisibile)
     loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
         modelOpen = gltf.scene;
         modelOpen.scale.set(1.8, 1.8, 1.8);
         centerModel(modelOpen);
-        modelOpen.visible = false;
+        modelOpen.visible = false;     // invisibile fino a quando non sarà caricato anche l'altro
         modelGroup.add(modelOpen);
-        checkModelsReady();
+        modelsLoadedCount++;
+        if (modelsLoadedCount === 2) update3DModel(currentDoorState);
     });
-
-    function checkModelsReady() {
-        if (modelClosed && modelOpen && !modelsLoaded) {
-            modelsLoaded = true;
-            update3DModel(currentDoorState);
-        }
-    }
 
     // Touch drag per ruotare
     let isDragging = false, prevX = 0;
