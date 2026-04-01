@@ -9,7 +9,7 @@ function applyThemeAndUser() {
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-    // Nome nel greeting (come in Dashboard)
+    // Nome nel greeting
     const greetingEl = document.getElementById('userNameHeader2');
     if (greetingEl) greetingEl.textContent = name;
 
@@ -26,7 +26,6 @@ function applyThemeAndUser() {
     });
 }
 
-// === GESTIONE ERRORI ROSSI ===
 function showError(message) {
     const errorEl = document.getElementById('errorContainer');
     errorEl.textContent = message;
@@ -40,11 +39,16 @@ function hideError() {
 function connectManual() {
     hideError();
     const id = document.getElementById('deviceId').value.trim();
-    if (id) {
-        window.location.href = `../HTML/Dashboard.html?id=${id}`;
-    } else {
-        showError('❌ Inserisci un ID valido');
+    if (!id) {
+        showError('❌ Inserisci un ID frigorifero');
+        return;
     }
+    // Validazione formato FRG- (come nella versione mobile)
+    if (!id.startsWith('FRG-')) {
+        showError('❌ ID non valido. Deve iniziare con "FRG-" (es. FRG-987654)');
+        return;
+    }
+    window.location.href = `../HTML/Dashboard.html?id=${id}`;
 }
 
 window.logout = function() {
