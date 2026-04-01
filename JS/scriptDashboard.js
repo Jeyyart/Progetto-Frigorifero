@@ -148,11 +148,11 @@ function init3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     scene = new THREE.Scene();
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.8, 14.0);
+    camera.position.set(0, 1.8, 15.0);
     camera.lookAt(0, 0, 0);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -242,6 +242,11 @@ function initChart() {
         chart.options.scales.y.grid.color = isLight ? '#cbd5e1' : '#333';
         chart.options.scales.x.grid.color = isLight ? '#cbd5e1' : '#333';
         chart.update();
+
+         if (scene) {
+            scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
+        }
+
     });
     observer.observe(document.documentElement, { attributes: true });
 }
