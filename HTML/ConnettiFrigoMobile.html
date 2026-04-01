@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NEXORA Smart Fridge - Connetti (Mobile)</title>
+    <link rel="stylesheet" href="../CSS/styleConnettiMobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../JS/scriptConnettiMobile.js" defer></script>
+</head>
+<body>
+    <div class="mobile-connect-container">
+        <div class="header">
+            <div class="logo-title">
+                <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
+                <h1>NEXORA Smart Fridge</h1>
+            </div>
+            <div class="header-actions">
+                <button id="themeToggleBtn" class="theme-toggle">☀️</button>
+                <button id="logoutBtn" class="logout-btn">ESCI</button>
+                <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
+            </div>
+        </div>
+
+        <p class="greeting">Ciao <span id="userNameHeader2"></span>, collega il tuo frigorifero</p>
+
+        <div class="connect-card">
+            <h2>🔢 Inserisci ID frigorifero</h2>
+            <p class="subtitle">Trovi l'ID sull'etichetta del dispositivo (es. FRG-987654)</p>
+
+            <div id="errorContainer" class="error-message" style="display:none;"></div>
+
+            <input type="text" id="deviceId" placeholder="ID del frigorifero (es. FRG-987654)" class="device-input" autocomplete="off">
+            <button id="connectBtn" class="connect-button">Connetti</button>
+        </div>
+    </div>
+</body>
+</html>
