@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NEXORA Smart Fridge - Mobile</title>
+    <link rel="stylesheet" href="../CSS/styleDashboardMobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="../JS/scriptDashboardMobile.js" defer></script>
+</head>
+<body>
+    <div class="mobile-dashboard">
+        <!-- Avviso per orientamento verticale -->
+        <div id="orientationWarning" class="orientation-warning">
+            ⚠️ Ruota il telefono in orizzontale per usare la dashboard
+        </div>
+
+        <div class="dashboard-landscape">
+            <!-- Colonna sinistra: modello 3D -->
+            <div class="model-column">
+                <canvas id="three-canvas"></canvas>
+                <div class="model-hint">🖱️ Trascina per ruotare</div>
+            </div>
+
+            <!-- Colonna destra: dati scrollabili -->
+            <div class="data-column">
+                <div class="header-mobile">
+                    <div class="logo-mobile">
+                        <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
+                        <h1>NEXORA</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button id="themeToggleBtn" class="theme-toggle">☀️</button>
+                        <button id="logoutBtn" class="logout-btn">ESCI</button>
+                        <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
+                    </div>
+                </div>
+
+                <p class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">TEMPERATURA</div>
+                        <div class="metric-value"><span id="tempValue"></span> <span class="metric-unit">°C</span></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">UMIDITÀ</div>
+                        <div class="metric-value"><span id="humidityValue"></span> <span class="metric-unit">%</span></div>
+                    </div>
+                    <div class="metric-card door" id="doorCard">
+                        <div class="metric-label">STATO PORTA</div>
+                        <div class="metric-value" id="doorStatus"></div>
+                        <div class="metric-trend" id="doorTime"></div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <div class="chart-title" id="chartTitle">Storico Temperatura</div>
+                        <div class="chart-tabs">
+                            <button class="chart-tab active" data-type="temperature">Temperatura</button>
+                            <button class="chart-tab" data-type="humidity">Umidità</button>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chartSwipeArea">
+                        <canvas id="dataChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="timeline-section">
+                    <div class="timeline-title">Timeline Aperture Porta - Oggi</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-hours">
+                            <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+                        </div>
+                        <div class="timeline-progress" id="timelineProgress"></div>
+                        <div id="timelineMessage" class="timeline-message">Nessuna apertura oggi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
