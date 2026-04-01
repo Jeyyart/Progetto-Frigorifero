@@ -1,112 +1,97 @@
+
 * { margin:0; padding:0; box-sizing:border-box; }
 :root { --bg: #121212; --card: #1e1e1e; --accent: #22c55e; --text: #f0f0f0; --muted: #aaa; }
 [data-theme="light"] { --bg: #f8fafc; --card: #ffffff; --accent: #22c55e; --text: #111827; --muted: #64748b; }
 
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    min-height: 100vh; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    overflow: hidden; 
+}
 
 .global-logo { position: absolute; top: 30px; left: 40px; display: flex; align-items: center; gap: 14px; z-index: 100; }
 .global-logo .logo-img { width: 62px; height: 62px; }
 .global-logo h1 { font-size: 28px; font-weight: 700; color: var(--accent); }
 
-.theme-toggle-global { position: absolute; top: 30px; right: 30px; background: #1a1a1a; border: 2px solid #444; color: #fff; width: 56px; height: 56px; border-radius: 14px; font-size: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.5); z-index: 200; }
+.theme-toggle-global { 
+    position: absolute; top: 30px; right: 30px; 
+    background: #1a1a1a; border: 2px solid #444; color: #fff; 
+    width: 56px; height: 56px; border-radius: 14px; 
+    font-size: 28px; display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.5); z-index: 200; 
+}
 .theme-toggle-global:hover { background: #22c55e; color: #111; }
 
-.containerRegistro { background: var(--card); border-radius: 28px; padding: 60px 50px 50px; width: 100%; max-width: 460px; box-shadow: 0 25px 60px rgba(0,0,0,0.7); }
+.containerRegistro { 
+    background: var(--card); border-radius: 28px; padding: 60px 50px 50px; 
+    width: 100%; max-width: 460px; box-shadow: 0 25px 60px rgba(0,0,0,0.7); 
+}
 
 .registroHeader {
     text-align: center;
-    margin-bottom: 45px;
+    margin-bottom: 30px;
 }
 
-.logo-placeholder {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    justify-content: center;
-    margin-bottom: 16px;
-}
-
-.logo-img {
-    width: 62px;
-    height: 62px;
-    border-radius: 12px;
-}
-
-.registroHeader h1 {
-    font-size: 34px;
+/* === TITOLO PIÙ GRANDE E VISIBILE === */
+#registroSubtitle {
+    font-size: 32px;
     font-weight: 700;
     color: var(--accent);
     letter-spacing: -1.2px;
+    margin-bottom: 8px;
 }
 
-.registroHeader p {
-    color: var(--muted);
-    font-size: 15.5px;
-    margin-top: 6px;
-}
-
-.RegistroForm {
-    margin-bottom: 26px;
-}
-
-.RegistroForm label {
-    display: block;
-    margin-bottom: 9px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--muted);
-}
-
-.RegistroForm input {
-    width: 100%;
-    padding: 18px 22px;
-    background: #2a2a2a;
-    border: 2px solid #3a3a3a;
+/* === MESSAGGIO ERRORE ROSSO (stile Google) === */
+.error-message {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    padding: 14px 20px;
     border-radius: 14px;
-    color: var(--text);
-    font-size: 17px;
-    transition: border 0.3s;
+    margin-bottom: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.RegistroForm input:focus {
-    border-color: var(--accent);
-    outline: none;
+.RegistroForm { margin-bottom: 26px; }
+.RegistroForm label {
+    display: block; margin-bottom: 9px; font-size: 14px; 
+    font-weight: 600; color: var(--muted);
 }
+.RegistroForm input {
+    width: 100%; padding: 18px 22px; background: #2a2a2a; 
+    border: 2px solid #3a3a3a; border-radius: 14px; 
+    color: var(--text); font-size: 17px; transition: border 0.3s;
+}
+.RegistroForm input:focus { border-color: var(--accent); outline: none; }
 
 [data-theme="light"] .RegistroForm input {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #111827;
+    background: #f8fafc; border-color: #cbd5e1; color: #111827;
 }
 
 .registroButton {
-    width: 100%;
-    padding: 19px;
-    background: var(--accent);
-    border: none;
-    border-radius: 16px;
-    color: #111;
-    font-size: 19px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: all 0.3s;
+    width: 100%; padding: 19px; background: var(--accent); border: none;
+    border-radius: 16px; color: #111; font-size: 19px; font-weight: 700;
+    cursor: pointer; margin-top: 12px; transition: all 0.3s;
 }
-
-.registroButton:hover {
-    background: #16a34a;
-    transform: translateY(-2px);
-}
+.registroButton:hover { background: #16a34a; transform: translateY(-2px); }
 
 .registroToggle {
-    text-align: center;
-    margin-top: 32px;
-    font-size: 15px;
-    color: var(--muted);
+    text-align: center; margin-top: 32px; font-size: 15px; color: var(--muted);
 }
-
 .registroToggle a {
     color: var(--accent);
     font-weight: 600;
     text-decoration: none;
+    cursor: pointer;          /* ← MANINA AL HOVER */
 }

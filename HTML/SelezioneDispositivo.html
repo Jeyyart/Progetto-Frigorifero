@@ -10,6 +10,7 @@
 </head>
 <body>
     <div class="containerSito">
+        <!-- HEADER FISSO IN ALTO -->
         <div class="header">
             <div class="header-left">
                 <div class="logo-placeholder">
@@ -23,17 +24,29 @@
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
-        <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, scegli il dispositivo</p>
 
-        <div class="devices-grid">
-            <div class="device-card active" onclick="selectDevice('frigo')">
-                <div class="device-icon">❄️</div>
-                <h2>Frigorifero</h2>
-                <p>Disponibile ora</p>
+        <!-- CONTENUTO CENTRATO VERTICALMENTE -->
+        <div class="main-content">
+            <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, scegli il dispositivo</p>
+
+            <div class="devices-grid">
+                <div class="device-card active" onclick="selectDevice()">
+                    <div class="device-icon">❄️</div>
+                    <h2>Frigorifero</h2>
+                </div>
+                <div class="device-card active" onclick="selectDevice()">
+                    <div class="device-icon">🍳</div>
+                    <h2>Forno</h2>
+                </div>
+                <div class="device-card active" onclick="selectDevice()">
+                    <div class="device-icon">📻</div>
+                    <h2>Microonde</h2>
+                </div>
+                <div class="device-card active" onclick="selectDevice()">
+                    <div class="device-icon">🍞</div>
+                    <h2>Tostapane</h2>
+                </div>
             </div>
-            <div class="device-card disabled"><div class="device-icon">🍳</div><h2>Forno</h2><p>Prossimamente</p></div>
-            <div class="device-card disabled"><div class="device-icon">📻</div><h2>Microonde</h2><p>Prossimamente</p></div>
-            <div class="device-card disabled"><div class="device-icon">🍞</div><h2>Tostapane</h2><p>Prossimamente</p></div>
         </div>
     </div>
 </body>

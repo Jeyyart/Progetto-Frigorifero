@@ -4,8 +4,13 @@ function applyThemeAndUser() {
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) window.location.href = '../HTML/registro.html';
 
-    document.getElementById('userNameHeader').textContent = currentUser.nickname;
-    document.getElementById('userDisplay').innerHTML = `👤 ${currentUser.nickname}`;
+    // Nome utente in header
+    document.getElementById('userNameHeader').textContent = currentUser.nickname || 'Utente';
+    document.getElementById('userDisplay').innerHTML = `👤 ${currentUser.nickname || 'Utente'}`;
+
+    // Nome utente nel greeting (come in Dashboard)
+    const greetingEl = document.getElementById('userNameHeader2');
+    if (greetingEl) greetingEl.textContent = currentUser.nickname || 'Utente';
 
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -20,8 +25,9 @@ function applyThemeAndUser() {
     });
 }
 
-function selectDevice(type) {
-    if (type === 'frigo') window.location.href = '../HTML/ConnettiFrigo.html';
+function selectDevice() {
+    // Tutti i dispositivi portano alla stessa pagina
+    window.location.href = '../HTML/ConnettiFrigo.html';
 }
 
 window.logout = function() {

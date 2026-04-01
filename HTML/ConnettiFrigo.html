@@ -28,6 +28,7 @@
         <h1 class="page-title">Connetti al tuo Frigorifero</h1>
 
         <div class="connect-container">
+            <!-- Card QR (nessun input) -->
             <div class="connect-card">
                 <h2>📱 Scansiona dal telefono</h2>
                 <p>Usa la fotocamera del tuo telefono per connetterti</p>
@@ -37,9 +38,14 @@
                 </div>
             </div>
 
+            <!-- Card Manuale con messaggio errore -->
             <div class="connect-card">
                 <h2>🔢 Inserisci ID</h2>
                 <p>Non riesci a usare il QR?</p>
+
+                <!-- MESSAGGIO ERRORE ROSSO -->
+                <div id="errorContainer" class="error-message" style="display:none;"></div>
+
                 <br>
                 <input type="text" id="deviceId" placeholder="ID del frigorifero (es. FRG-987654)" class="manual-input">
                 <button onclick="connectManual()" class="registroButton">Connetti</button>

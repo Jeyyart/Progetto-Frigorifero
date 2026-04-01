@@ -7,18 +7,15 @@
     <link rel="stylesheet" href="../CSS/styleDashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <!-- Three.js + GLTFLoader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/loaders/GLTFLoader.js"></script>
-    
+    <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="../JS/scriptDashboard.js" defer></script>
 </head>
 <body>
     <div class="containerSito">
         <div class="modello3D">
             <canvas id="three-canvas"></canvas>
-            <div class="model-hint">🖱️ Trascina per ruotare il modello 3D</div>
+            <div class="model-hint">🖱️ Trascina per ruotare • Gira automaticamente</div>
         </div>
 
         <div class="DashboardContent">
@@ -51,18 +48,18 @@
             <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="metric-label">TEMPERATURA</div>
-                    <div class="metric-value"><span id="tempValue">--</span> <span class="metric-unit">°C</span></div>
-                    <div class="metric-trend" id="tempTrend">--</div>
+                    <div class="metric-value"><span id="tempValue"></span> <span class="metric-unit">°C</span></div>
+                    <div class="metric-trend" id="tempTrend"></div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">UMIDITÀ</div>
-                    <div class="metric-value"><span id="humidityValue">--</span> <span class="metric-unit">%</span></div>
-                    <div class="metric-trend" id="humidityTrend">--</div>
+                    <div class="metric-value"><span id="humidityValue"></span> <span class="metric-unit">%</span></div>
+                    <div class="metric-trend" id="humidityTrend"></div>
                 </div>
                 <div class="metric-card door" id="doorCard">
                     <div class="metric-label">STATO PORTA</div>
-                    <div class="metric-value" id="doorStatus">--</div>
-                    <div class="metric-trend" id="doorTime">--</div>
+                    <div class="metric-value" id="doorStatus"></div>
+                    <div class="metric-trend" id="doorTime"></div>
                 </div>
             </div>
 
@@ -74,18 +71,19 @@
                         <button class="chart-tab" data-type="humidity">Umidità</button>
                     </div>
                 </div>
-                <div class="chart-container">
+                <div class="chart-container" id="chartSwipeArea">
                     <canvas id="dataChart"></canvas>
                 </div>
             </div>
 
             <div class="timeline-section">
                 <div class="timeline-title">Timeline Aperture Porta - Oggi</div>
-                <div class="timeline-container">
+                <div class="timeline-bar">
                     <div class="timeline-hours">
                         <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
                     </div>
-                    <div class="timeline-events" id="timelineEvents"></div>
+                    <div class="timeline-progress" id="timelineProgress"></div>
+                    <div id="timelineMessage" class="timeline-message">Nessuna apertura oggi</div>
                 </div>
             </div>
         </div>

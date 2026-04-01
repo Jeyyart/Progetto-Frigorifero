@@ -1,3 +1,4 @@
+
 :root {
     --bg: #0f0f0f;
     --card: #1a1a1a;
@@ -39,7 +40,6 @@ body {
 }
 
 .header-left { display: flex; align-items: center; gap: 14px; }
-
 .logo-placeholder { display: flex; align-items: center; gap: 12px; }
 .logo-img { width: 58px; height: 58px; }
 
@@ -96,10 +96,7 @@ body {
     color: var(--text);
 }
 
-.qr-wrapper {
-    margin: 30px 0;
-}
-
+.qr-wrapper { margin: 30px 0; }
 .qr-code-img {
     width: 320px;
     height: 320px;
@@ -109,12 +106,7 @@ body {
     display: block;
     margin: 0 auto;
 }
-
-.qr-hint {
-    margin-top: 15px;
-    color: var(--muted);
-    font-size: 14px;
-}
+.qr-hint { margin-top: 15px; color: var(--muted); font-size: 14px; }
 
 .manual-input {
     width: 100%;
@@ -125,6 +117,12 @@ body {
     border-radius: 14px;
     color: var(--text);
     margin-bottom: 25px;
+}
+
+[data-theme="light"] .manual-input {
+    background: #ffffff;
+    border: 2px solid #cbd5e1;
+    color: #111827;
 }
 
 .registroButton {
@@ -147,18 +145,7 @@ body {
     border-radius: 9999px;
     font-weight: 700;
     font-size: 15px;
-}
-
-.theme-toggle {
-    background: #2a2a2a;
-    border: 1px solid #444;
-    padding: 10px 14px;
-    font-size: 1.4rem;
-}
-
-[data-theme="light"] .theme-toggle {
-    background: #e2e8f0;
-    color: #111827;
+    cursor: pointer;                    /* ← MANINA AL HOVER */
 }
 
 .user-display {
@@ -181,6 +168,20 @@ body {
     padding: 0 40px;
 }
 
+.error-message {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    padding: 14px 20px;
+    border-radius: 14px;
+    margin: 20px 0 25px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
 @media (max-width: 900px) {
     .connect-container { grid-template-columns: 1fr; }

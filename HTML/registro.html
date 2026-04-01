@@ -20,13 +20,16 @@
 
     <div class="containerRegistro">
         <div class="registroHeader">
-            <p id="registroSubtitle">Accedi al tuo sistema di monitoraggio</p>
+            <h2 id="registroSubtitle">Accedi al tuo sistema di monitoraggio</h2>
         </div>
+
+        <!-- MESSAGGIO ERRORE ROSSO (nuovo) -->
+        <div id="errorContainer" class="error-message" style="display:none;"></div>
 
         <div class="registroForm">
             <div class="RegistroForm" id="loginIdentifierGroup">
                 <label for="identifier">Email o Nickname</label>
-                <input type="text" id="identifier" placeholder="a@a.com oppure J" required>
+                <input type="text" id="identifier" placeholder="Esempio@email.com o Nickname" required>
             </div>
 
             <div class="RegistroForm" id="nicknameGroup" style="display:none;">
@@ -35,7 +38,7 @@
             </div>
             <div class="RegistroForm" id="emailGroup" style="display:none;">
                 <label for="email">Email</label>
-                <input type="text" id="email" placeholder="tuo@email.com">
+                <input type="text" id="email" placeholder="tua@email.com">
             </div>
 
             <div class="RegistroForm">

@@ -1,16 +1,21 @@
-console.log('✅ scriptDashboard.js CARICATO - VERSIONE GLB');
+console.log('✅ scriptDashboard.js CARICATO - layout originale ripristinato');
 
 let chart = null;
 let currentChartType = 'temperature';
 let readingsHistory = [];
+let modelGroup = null;          // gruppo che ruota (centrato)
 let modelClosed = null;
 let modelOpen = null;
+let currentModel = null;        // riferimento al modello attualmente nel gruppo
 let scene = null;
 let camera = null;
 let renderer = null;
 let rotationY = 0;
+let autoRotateSpeed = 0.002;    // rotazione molto lenta
 let currentUser = null;
 let currentDeviceId = null;
+let modelsReady = false;         // entrambi i modelli caricati?
+let pendingDoorState = false;    // stato in attesa se modelli non pronti
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -31,11 +36,18 @@ function updateMetrics(readings) {
     const latest = readings[readings.length - 1];
     document.getElementById('tempValue').textContent = latest.temperature;
     document.getElementById('humidityValue').textContent = latest.humidity;
+
     const isOpen = latest.doorOpen;
     document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
     document.getElementById('doorCard').classList.toggle('open', isOpen);
     document.getElementById('doorTime').textContent = isOpen ? 'Aperta da 12 min' : 'Chiusa da 2h 45m';
-    if (typeof window.update3D === 'function') window.update3D(isOpen);
+    
+    // Aggiorna modello 3D (se modelli pronti)
+    if (modelsReady) {
+        switchModel(isOpen);
+    } else {
+        pendingDoorState = isOpen;
+    }
 }
 
 function updateChart() {
@@ -43,12 +55,12 @@ function updateChart() {
     const labels = readingsHistory.map(r => formatTime(r.timestamp));
     const tempData = readingsHistory.map(r => r.temperature);
     const humData = readingsHistory.map(r => r.humidity);
-    const lineColor = currentChartType === 'temperature' ? '#22c55e' : '#22d3ee';
+
     chart.data.labels = labels;
     chart.data.datasets[0].data = currentChartType === 'temperature' ? tempData : humData;
-    chart.data.datasets[0].borderColor = lineColor;
-    chart.data.datasets[0].backgroundColor = lineColor + '22';
-    document.getElementById('chartTitle').textContent = currentChartType === 'temperature' ? 'Storico Temperatura (°C)' : 'Storico Umidità (%)';
+    chart.data.datasets[0].borderColor = currentChartType === 'temperature' ? '#22c55e' : '#22d3ee';
+    chart.data.datasets[0].backgroundColor = currentChartType === 'temperature' ? '#22c55e22' : '#22d3ee22';
+    document.getElementById('chartTitle').textContent = currentChartType === 'temperature' ? 'Storico Temperatura' : 'Storico Umidità';
     chart.update('none');
 }
 
@@ -63,6 +75,27 @@ function addTabListeners() {
     });
 }
 
+/* Swipe orizzontale su telefono per cambiare grafico */
+function addSwipeListener() {
+    const swipeArea = document.getElementById('chartSwipeArea');
+    let startX = 0;
+    swipeArea.addEventListener('touchstart', e => startX = e.changedTouches[0].screenX);
+    swipeArea.addEventListener('touchend', e => {
+        const endX = e.changedTouches[0].screenX;
+        const diff = startX - endX;
+        if (Math.abs(diff) < 80) return;
+        
+        const tabs = document.querySelectorAll('.chart-tab');
+        if (diff > 0) { // swipe sinistra → prossima
+            currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
+        } else { // swipe destra → precedente
+            currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
+        }
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.type === currentChartType));
+        updateChart();
+    });
+}
+
 async function fetchAndUpdate() {
     try {
         let url = API_URL;
@@ -71,11 +104,11 @@ async function fetchAndUpdate() {
         const data = res.ok ? await res.json() : mockReadings;
         readingsHistory = processReadings(Array.isArray(data) ? data : [data]);
     } catch(e) {
-        console.warn('⚠️ API non raggiungibile → uso mock');
         readingsHistory = processReadings(mockReadings);
     }
     updateMetrics(readingsHistory);
     updateChart();
+    updateTimeline();
 }
 
 const mockReadings = [
@@ -84,46 +117,31 @@ const mockReadings = [
     { timestame: "2026-03-30T20:00:00Z", temperatura: 8.9, umidita: 33, portaAperta: true }
 ];
 
-function initChart() {
-    const ctx = document.getElementById('dataChart').getContext('2d');
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: [], datasets: [{ data: [], tension: 0.3, fill: true, borderWidth: 3 }] },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#333' }, ticks: { color: '#ccc' } },
-                x: { grid: { color: '#333' }, ticks: { color: '#ccc' } }
-            }
-        }
-    });
+/* Funzione per centrare un modello all'interno del gruppo */
+function centerModel(model) {
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.set(-center.x, -center.y, -center.z);
 }
 
-/* === 3D GLB - attesa robusta === */
-let retryCount = 0;
-const MAX_RETRIES = 20;
-
-function init3D() {
-    console.log('🚀 Inizializzazione 3D GLB...');
-
-    if (typeof THREE === 'undefined' || typeof THREE.GLTFLoader === 'undefined') {
-        retryCount++;
-        if (retryCount < MAX_RETRIES) {
-            console.log(`⏳ GLTFLoader non ancora pronto, riprovo tra 300ms... (${retryCount}/${MAX_RETRIES})`);
-            setTimeout(init3D, 300);
-            return;
-        } else {
-            console.error('❌ GLTFLoader non si è caricato dopo 20 tentativi.');
-            const hint = document.querySelector('.model-hint');
-            if (hint) hint.innerHTML = '❌ Modelli 3D non caricati.<br>Controlla la console (F12)';
-            return;
-        }
+/* Cambia il modello nel gruppo: rimuove quello attuale e aggiunge quello richiesto */
+function switchModel(isOpen) {
+    if (!modelsReady) return;
+    
+    const targetModel = isOpen ? modelOpen : modelClosed;
+    if (currentModel === targetModel) return; // già attivo
+    
+    if (currentModel) {
+        modelGroup.remove(currentModel);
     }
+    if (targetModel) {
+        modelGroup.add(targetModel);
+        currentModel = targetModel;
+    }
+}
 
-    console.log('✅ GLTFLoader pronto, carico i modelli...');
-
+/* 3D - Rotazione su sé stesso con gruppo centrato */
+function init3D() {
     const canvas = document.getElementById('three-canvas');
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
@@ -133,46 +151,58 @@ function init3D() {
     scene.background = new THREE.Color(0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.5, 4);
+    camera.position.set(0, 1.8, 14.0);
+    camera.lookAt(0, 0, 0);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambient);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    dirLight.position.set(5, 10, 8);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(10, 15, 10);
     scene.add(dirLight);
 
-    const loader = new THREE.GLTFLoader();
+    modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
+    const loader = new THREE.GLTFLoader();
+    
+    // Carica modello chiuso (non aggiungerlo subito al gruppo)
     loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => {
-        console.log('✅ Frigo CHIUSO (.glb) caricato');
         modelClosed = gltf.scene;
         modelClosed.scale.set(1.8, 1.8, 1.8);
-        scene.add(modelClosed);
-    }, undefined, err => console.error('❌ FRIGO-CHIUSO.glb →', err));
-
+        centerModel(modelClosed);
+        // Non aggiungere al gruppo ora
+        checkModelsReady();
+    });
+    
+    // Carica modello aperto
     loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
-        console.log('✅ Frigo APERTO (.glb) caricato');
         modelOpen = gltf.scene;
         modelOpen.scale.set(1.8, 1.8, 1.8);
-        modelOpen.visible = false;
-        scene.add(modelOpen);
-    }, undefined, err => console.error('❌ FRIGO-APERTO.glb →', err));
+        centerModel(modelOpen);
+        checkModelsReady();
+    });
 
-    // Rotazione mouse
+    function checkModelsReady() {
+        if (modelClosed && modelOpen && !modelsReady) {
+            modelsReady = true;
+            // Applica lo stato della porta che era in attesa
+            switchModel(pendingDoorState);
+        }
+    }
+
     let isDragging = false, prevX = 0;
     canvas.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; });
     window.addEventListener('mouseup', () => isDragging = false);
     canvas.addEventListener('mousemove', e => {
         if (!isDragging) return;
-        const delta = (e.clientX - prevX) * 0.008;
-        rotationY += delta;
-        if (modelClosed) modelClosed.rotation.y = rotationY;
-        if (modelOpen) modelOpen.rotation.y = rotationY;
+        rotationY += (e.clientX - prevX) * 0.008;
         prevX = e.clientX;
     });
 
     function animate() {
         requestAnimationFrame(animate);
+        rotationY += autoRotateSpeed;
+        if (modelGroup) modelGroup.rotation.y = rotationY;
         renderer.render(scene, camera);
     }
     animate();
@@ -184,17 +214,35 @@ function init3D() {
     });
 }
 
-window.update3D = function(isOpen) {
-    if (modelClosed && modelOpen) {
-        modelClosed.visible = !isOpen;
-        modelOpen.visible = isOpen;
-    }
-};
+function updateTimeline() {
+    const hasOpenings = readingsHistory.some(r => r.doorOpen);
+    document.getElementById('timelineMessage').textContent = hasOpenings ? 'Aperture rilevate oggi' : 'Nessuna apertura oggi';
+}
 
-function switchDeviceId(newId) {
-    currentDeviceId = newId;
-    window.history.replaceState({}, '', `?id=${newId}`);
-    fetchAndUpdate();
+function initChart() {
+    const ctx = document.getElementById('dataChart').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [{ data: [], tension: 0.3, fill: true, borderWidth: 3 }] },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { grid: { color: '#333' }, ticks: { color: '#ccc' } }, x: { grid: { color: '#333' }, ticks: { color: '#ccc' } } }
+        }
+    });
+
+    // Assi neri in tema chiaro
+    const observer = new MutationObserver(() => {
+        if (!chart) return;
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        chart.options.scales.y.ticks.color = isLight ? '#111827' : '#ccc';
+        chart.options.scales.x.ticks.color = isLight ? '#111827' : '#ccc';
+        chart.options.scales.y.grid.color = isLight ? '#cbd5e1' : '#333';
+        chart.options.scales.x.grid.color = isLight ? '#cbd5e1' : '#333';
+        chart.update();
+    });
+    observer.observe(document.documentElement, { attributes: true });
 }
 
 function initAll() {
@@ -203,18 +251,17 @@ function initAll() {
 
     const name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
-    const greetingEl = document.getElementById('userNameHeader2');
-    if (greetingEl) greetingEl.textContent = name;
+    document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
-
-    if (currentUser.nickname === 'J') currentDeviceId = null;
 
     initChart();
     addTabListeners();
+    addSwipeListener();
     init3D();
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
+    // Tema + Logout
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -226,8 +273,7 @@ function initAll() {
         themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
     });
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) logoutBtn.addEventListener('click', window.logout);
+    document.getElementById('logoutBtn').addEventListener('click', window.logout);
 }
 
 window.logout = function() {
