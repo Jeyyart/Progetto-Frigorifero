@@ -11,6 +11,9 @@ function applyThemeAndUser() {
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
+    document.getElementById('scanBtn').addEventListener('click', () => {
+    window.location.href = '../HTML/ScanTelefono.html';
+    });
 
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);

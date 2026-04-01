@@ -25,15 +25,13 @@ body {
     background: var(--bg);
     color: var(--text);
     height: 100vh;
-    width: 100vw;
-    overflow: hidden;
+    overflow-y: auto;          /* permette scroll verticale */
 }
 
 .mobile-connect-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
+    min-height: 100vh;
     padding: 20px;
     gap: 20px;
 }
@@ -114,24 +112,56 @@ body {
     margin: 0;
 }
 
-/* Card centrale */
-.connect-card {
+/* Contenitore flessibile per le due sezioni */
+.connect-row {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: center;
+}
+
+/* Sezione scansione */
+.scan-section {
     background: var(--card);
     border-radius: 28px;
     padding: 30px 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     text-align: center;
-    margin: auto 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
-.connect-card h2 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    color: var(--text);
+.scan-section h3 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: var(--accent);
 }
-.subtitle {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 24px;
+.scan-button {
+    background: var(--accent);
+    color: #111;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.1s;
+}
+.scan-button:active {
+    transform: scale(0.98);
+}
+
+/* Sezione manuale */
+.manual-section {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 30px 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.manual-section h3 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: var(--accent);
 }
 .device-input {
     width: 100%;
@@ -158,7 +188,6 @@ body {
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.1s;
 }
 .connect-button:active {
     transform: scale(0.98);
@@ -177,26 +206,25 @@ body {
     text-align: center;
 }
 
-/* Orientamento orizzontale */
+/* ORIENTAZIONE ORIZZONTALE */
 @media (orientation: landscape) {
-    .mobile-connect-container {
+    .connect-row {
         flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
         gap: 30px;
     }
-    .header {
-        width: 100%;
-        justify-content: space-between;
+    .scan-section,
+    .manual-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
-    .connect-card {
-        max-width: 500px;
-        width: 80%;
-        margin: 0 auto;
+    .scan-button,
+    .connect-button {
+        margin-top: auto;
     }
     .greeting {
-        width: 100%;
         text-align: center;
     }
 }
