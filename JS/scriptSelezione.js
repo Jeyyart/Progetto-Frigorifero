@@ -8,7 +8,7 @@ function applyThemeAndUser() {
     document.getElementById('userNameHeader').textContent = currentUser.nickname || 'Utente';
     document.getElementById('userDisplay').innerHTML = `👤 ${currentUser.nickname || 'Utente'}`;
 
-    // Nome utente nel greeting (come in Dashboard)
+    // Nome utente nel greeting
     const greetingEl = document.getElementById('userNameHeader2');
     if (greetingEl) greetingEl.textContent = currentUser.nickname || 'Utente';
 
@@ -25,9 +25,19 @@ function applyThemeAndUser() {
     });
 }
 
+function isMobileDevice() {
+    // Controlla larghezza finestra (tipico breakpoint per mobile)
+    if (window.innerWidth <= 768) return true;
+    // Controlla user agent per dispositivi mobili (inclusi tablet)
+    const ua = navigator.userAgent;
+    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    return mobileRegex.test(ua);
+}
+
 function selectDevice() {
-    // Tutti i dispositivi portano alla stessa pagina
-    window.location.href = '../HTML/ConnettiFrigo.html';
+    // Determina la pagina di connessione in base al dispositivo
+    const targetPage = isMobileDevice() ? 'ConnettiFrigoMobile.html' : 'ConnettiFrigo.html';
+    window.location.href = `../HTML/${targetPage}`;
 }
 
 window.logout = function() {
