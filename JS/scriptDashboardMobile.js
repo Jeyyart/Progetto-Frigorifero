@@ -6,6 +6,7 @@ let readingsHistory = [];
 let modelGroup = null;
 let modelClosed = null;
 let modelOpen = null;
+let currentModel = null;         // riferimento al modello attualmente nel gruppo
 let scene = null;
 let camera = null;
 let renderer = null;
@@ -13,8 +14,8 @@ let rotationY = 0;
 let autoRotateSpeed = 0.002;
 let currentUser = null;
 let currentDeviceId = null;
-let modelsLoadedCount = 0;      // contatore per entrambi i modelli
-let currentDoorState = false;   // stato porta (false = chiusa)
+let modelsLoaded = false;        // entrambi i modelli caricati?
+let pendingDoorState = false;    // stato in attesa se modelli non pronti
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -41,11 +42,15 @@ function updateMetrics(readings) {
     document.getElementById('humidityValue').textContent = latest.humidity;
 
     const isOpen = latest.doorOpen;
-    currentDoorState = isOpen;
     document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
     document.getElementById('doorCard').classList.toggle('open', isOpen);
     document.getElementById('doorTime').textContent = isOpen ? 'Aperta da 12 min' : 'Chiusa da 2h 45m';
-    update3DModel(isOpen);   // aggiorna modello se già caricato
+    
+    if (modelsLoaded) {
+        switchModel(isOpen);
+    } else {
+        pendingDoorState = isOpen;
+    }
 }
 
 function updateChart() {
@@ -121,11 +126,17 @@ function centerModel(model) {
     model.position.set(-center.x, -center.y, -center.z);
 }
 
-function update3DModel(isOpen) {
-    // Chiamata solo quando entrambi i modelli sono caricati
-    if (modelClosed && modelOpen) {
-        modelClosed.visible = !isOpen;
-        modelOpen.visible = isOpen;
+function switchModel(isOpen) {
+    if (!modelsLoaded) return;
+    const targetModel = isOpen ? modelOpen : modelClosed;
+    if (currentModel === targetModel) return;
+    
+    if (currentModel) {
+        modelGroup.remove(currentModel);
+    }
+    if (targetModel) {
+        modelGroup.add(targetModel);
+        currentModel = targetModel;
     }
 }
 
@@ -139,7 +150,7 @@ function init3D() {
     scene.background = new THREE.Color(0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.8, 20.0);   // ← posizione richiesta
+    camera.position.set(0, 1.8, 20.0);
     camera.lookAt(0, 0, 0);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -153,27 +164,29 @@ function init3D() {
 
     const loader = new THREE.GLTFLoader();
     
-    // Carica modello chiuso (inizialmente invisibile)
+    // Carica modello chiuso
     loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => {
         modelClosed = gltf.scene;
         modelClosed.scale.set(1.8, 1.8, 1.8);
         centerModel(modelClosed);
-        modelClosed.visible = false;   // invisibile fino a quando non sarà caricato anche l'altro
-        modelGroup.add(modelClosed);
-        modelsLoadedCount++;
-        if (modelsLoadedCount === 2) update3DModel(currentDoorState);
+        checkModelsReady();
     });
     
-    // Carica modello aperto (inizialmente invisibile)
+    // Carica modello aperto
     loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
         modelOpen = gltf.scene;
         modelOpen.scale.set(1.8, 1.8, 1.8);
         centerModel(modelOpen);
-        modelOpen.visible = false;     // invisibile fino a quando non sarà caricato anche l'altro
-        modelGroup.add(modelOpen);
-        modelsLoadedCount++;
-        if (modelsLoadedCount === 2) update3DModel(currentDoorState);
+        checkModelsReady();
     });
+
+    function checkModelsReady() {
+        if (modelClosed && modelOpen && !modelsLoaded) {
+            modelsLoaded = true;
+            // Applica lo stato della porta in attesa
+            switchModel(pendingDoorState);
+        }
+    }
 
     // Touch drag per ruotare
     let isDragging = false, prevX = 0;
