@@ -2,41 +2,56 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <!-- viewport specifico per mobile: disabilita lo zoom, si adatta alla copertura del display (viewport-fit=cover per notch) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Connetti (Mobile)</title>
+    <!-- Foglio di stile specifico per l'interfaccia mobile -->
     <link rel="stylesheet" href="../CSS/styleConnettiMobile.css">
+    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
+    <!-- Script JavaScript per la logica di connessione (mobile) -->
     <script src="../JS/scriptConnettiMobile.js" defer></script>
 </head>
 <body>
+    <!-- Contenitore principale ottimizzato per mobile (flex colonna) -->
     <div class="mobile-connect-container">
+        <!-- HEADER: logo, pulsante tema, logout, nome utente -->
         <div class="header">
             <div class="logo-title">
                 <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
                 <h1>NEXORA Smart Fridge</h1>
             </div>
             <div class="header-actions">
+                <!-- Pulsante cambio tema (sole/luna) -->
                 <button id="themeToggleBtn" class="theme-toggle">☀️</button>
+                <!-- Pulsante logout (id usato nel JS per attaccare l'evento) -->
                 <button id="logoutBtn" class="logout-btn">ESCI</button>
+                <!-- Badge con nome utente -->
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
 
+        <!-- Messaggio di benvenuto personalizzato -->
         <p class="greeting">Ciao <span id="userNameHeader2"></span>, collega il tuo frigorifero</p>
 
+        <!-- Riga flessibile che in verticale impila le due sezioni, in orizzontale le affianca -->
         <div class="connect-row">
-            <!-- Sezione scansione QR -->
+            <!-- Sezione scansione QR: solo un pulsante che rimanda alla pagina di scansione -->
             <div class="scan-section">
                 <h3>Scansiona da telefono</h3>
                 <button id="scanBtn" class="scan-button">📷 vai a scanner</button>
             </div>
 
-            <!-- Sezione inserimento manuale -->
+            <!-- Sezione inserimento manuale ID (con validazione) -->
             <div class="manual-section">
                 <h3>Inserisci ID</h3>
+                <!-- Contenitore per messaggi di errore (inizialmente nascosto) -->
                 <div id="errorContainer" class="error-message" style="display:none;"></div>
+                <!-- Campo input per l'ID del frigorifero (deve iniziare con FRG-) -->
                 <input type="text" id="deviceId" placeholder="ID del frigorifero (es. FRG-987654)" class="device-input" autocomplete="off">
+                <!-- Pulsante di connessione -->
                 <button id="connectBtn" class="connect-button">Connetti</button>
             </div>
         </div>

@@ -1,11 +1,13 @@
+/* VARIABILI CSS per il tema scuro (impostazione predefinita) */
 :root {
-    --bg: #0f0f0f;
-    --card: #1a1a1a;
-    --accent: #22c55e;
-    --text: #f0f0f0;
-    --muted: #aaaaaa;
+    --bg: #0f0f0f;          /* sfondo principale */
+    --card: #1a1a1a;        /* sfondo delle card (metriche, grafico, timeline) */
+    --accent: #22c55e;      /* verde per accenti e pulsanti */
+    --text: #f0f0f0;        /* colore del testo principale */
+    --muted: #aaaaaa;       /* colore per testi secondari */
 }
 
+/* VARIABILI per il tema chiaro: sovrascritte quando data-theme="light" sull'elemento <html> */
 [data-theme="light"] {
     --bg: #f8fafc;
     --card: #ffffff;
@@ -14,28 +16,31 @@
     --muted: #64748b;
 }
 
+/* Reset CSS: toglie margini e padding predefiniti, e usa il box-sizing border-box */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Stile base del body: font, sfondo dinamico, occupa tutta la finestra, nasconde lo scroll esterno */
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
     width: 100vw;
-    overflow: hidden;
+    overflow: hidden;        /* evita doppio scroll, perché il contenuto destro scrolla indipendentemente */
 }
 
+/* Contenitore principale della dashboard mobile */
 .mobile-dashboard {
     height: 100%;
     width: 100%;
     position: relative;
 }
 
-/* Avviso orientamento verticale */
+/* AVVISO PER ORIENTAMENTO VERTICALE (portrait) */
 .orientation-warning {
     position: fixed;
     top: 0;
@@ -52,10 +57,10 @@ body {
     text-align: center;
     z-index: 1000;
     backdrop-filter: blur(5px);
-    display: none;
+    display: none;           /* inizialmente nascosto, verrà mostrato solo in modalità portrait */
 }
 
-/* Layout landscape */
+/* LAYOUT PER ORIENTAMENTO ORIZZONTALE (landscape) */
 .dashboard-landscape {
     display: flex;
     height: 100%;
@@ -64,26 +69,28 @@ body {
     transition: opacity 0.3s;
 }
 
-/* Colonna sinistra: modello 3D */
+/* COLONNA SINISTRA: modello 3D (occupa metà larghezza) */
 .model-column {
     flex: 1;
     background: #111;
     position: relative;
-    min-width: 0; /* per evitare overflow */
+    min-width: 0;            /* evita overflow in flex */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 [data-theme="light"] .model-column {
-    background: #e2e8f0;
+    background: #e2e8f0;    /* sfondo chiaro per tema light */
 }
 
+/* Canvas per il modello 3D: riempie completamente la colonna */
 #three-canvas {
     width: 100%;
     height: 100%;
     display: block;
 }
 
+/* Suggerimento in basso sul modello (trascina per ruotare) */
 .model-hint {
     position: absolute;
     bottom: 15px;
@@ -95,19 +102,19 @@ body {
     border-radius: 20px;
     font-size: 12px;
     white-space: nowrap;
-    pointer-events: none;
+    pointer-events: none;    /* il testo non interferisce con il trascinamento */
 }
 
-/* Colonna destra: dati scrollabili */
+/* COLONNA DESTRA: dati, grafico, timeline (scrollabile) */
 .data-column {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto;        /* permette lo scroll verticale */
     padding: 20px 20px 30px 20px;
     background: var(--bg);
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch;  /* scroll fluido su iOS */
 }
 
-/* Header mobile compatto */
+/* HEADER MOBILE (compatto) */
 .header-mobile {
     display: flex;
     justify-content: space-between;
@@ -139,6 +146,7 @@ body {
     gap: 8px;
 }
 
+/* Pulsante cambio tema */
 .theme-toggle {
     background: #1a1a1a;
     border: 2px solid #444;
@@ -158,6 +166,7 @@ body {
     color: #111;
 }
 
+/* Pulsante logout (rosso) */
 .logout-btn {
     background: #e74c3c;
     color: white;
@@ -169,6 +178,7 @@ body {
     cursor: pointer;
 }
 
+/* Badge nome utente (verde) */
 .user-display {
     background: #22c55e;
     color: #111;
@@ -181,6 +191,7 @@ body {
     gap: 6px;
 }
 
+/* Messaggio di benvenuto */
 .greeting {
     font-size: 18px;
     font-weight: 600;
@@ -188,7 +199,7 @@ body {
     color: var(--text);
 }
 
-/* Griglia metriche (3 colonne su mobile) */
+/* GRIGLIA DELLE METRICHE (3 colonne su mobile) */
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -196,6 +207,7 @@ body {
     margin-bottom: 25px;
 }
 
+/* Singola card metrica */
 .metric-card {
     background: var(--card);
     border-radius: 16px;
@@ -225,7 +237,7 @@ body {
     color: var(--muted);
 }
 
-/* Grafico */
+/* SEZIONE GRAFICO */
 .chart-section {
     background: var(--card);
     border-radius: 16px;
@@ -263,7 +275,7 @@ body {
     width: 100%;
 }
 
-/* Timeline */
+/* SEZIONE TIMELINE (aperture porta) */
 .timeline-section {
     background: var(--card);
     border-radius: 16px;
@@ -275,44 +287,6 @@ body {
     font-weight: 700;
     margin-bottom: 12px;
 }
-.timeline-bar {
-    background: #222;
-    border-radius: 20px;
-    padding: 12px 20px;
-    position: relative;
-    height: 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-[data-theme="light"] .timeline-bar {
-    background: #e2e8f0;
-}
-.timeline-hours {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 6px;
-}
-.timeline-progress {
-    height: 8px;
-    background: #333;
-    border-radius: 10px;
-    position: relative;
-}
-.timeline-message {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    white-space: nowrap;
-}
-
 .timeline-events {
     margin-top: 12px;
     padding: 12px;
@@ -339,13 +313,13 @@ body {
     border-bottom-color: rgba(0,0,0,0.1);
 }
 
-/* Forza orientamento orizzontale */
+/* REGOLA CRITICA: se il telefono è in orientamento verticale (portrait), nasconde la dashboard e mostra l'avviso */
 @media (orientation: portrait) {
     .dashboard-landscape {
         opacity: 0;
-        pointer-events: none;
+        pointer-events: none;   /* impedisce interazioni */
     }
     .orientation-warning {
-        display: flex;
+        display: flex;           /* mostra il messaggio "Ruota il telefono" */
     }
 }

@@ -1,11 +1,13 @@
+/* VARIABILI CSS (colori) per il tema scuro (di default) */
 :root {
-    --bg: #121212;
-    --card: #1e1e1e;
-    --accent: #22c55e;
-    --text: #f0f0f0;
-    --muted: #aaa;
+    --bg: #121212;          /* sfondo principale */
+    --card: #1e1e1e;        /* sfondo della card */
+    --accent: #22c55e;      /* verde per accenti e pulsanti */
+    --text: #f0f0f0;        /* colore testo principale */
+    --muted: #aaa;          /* testo secondario */
 }
 
+/* VARIABILI per il tema chiaro (sovrascritte quando data-theme="light") */
 [data-theme="light"] {
     --bg: #f8fafc;
     --card: #ffffff;
@@ -20,6 +22,7 @@
     box-sizing: border-box;
 }
 
+/* STILI GENERALI DEL BODY */
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
@@ -33,7 +36,7 @@ body {
     padding: 20px;
 }
 
-/* Logo in alto a sinistra (sempre visibile) */
+/* LOGO IN ALTO A SINISTRA (fisso, sempre visibile) */
 .global-logo {
     position: fixed;
     top: 20px;
@@ -53,7 +56,7 @@ body {
     color: var(--accent);
 }
 
-/* Tema in alto a destra (sempre visibile) */
+/* PULSANTE CAMBIO TEMA (fisso in alto a destra) */
 .theme-toggle-global {
     position: fixed;
     top: 20px;
@@ -76,13 +79,14 @@ body {
     background: var(--accent);
     color: #111;
 }
+/* Variante tema chiaro per il pulsante */
 [data-theme="light"] .theme-toggle-global {
     background: #e2e8f0;
     border-color: #cbd5e1;
     color: #111;
 }
 
-/* Card centrale */
+/* CARD CENTRALE (modulo) */
 .containerRegistro {
     background: var(--card);
     border-radius: 28px;
@@ -93,11 +97,11 @@ body {
     margin: 80px auto;
 }
 
+/* INTESTAZIONE DELLA CARD */
 .registroHeader {
     text-align: center;
     margin-bottom: 30px;
 }
-
 #registroSubtitle {
     font-size: 28px;
     font-weight: 700;
@@ -106,7 +110,7 @@ body {
     line-height: 1.2;
 }
 
-/* Messaggio errore */
+/* STILE PER I MESSAGGI DI ERRORE (rosso su sfondo trasparente) */
 .error-message {
     color: #ef4444;
     background-color: rgba(239, 68, 68, 0.15);
@@ -122,7 +126,7 @@ body {
     gap: 8px;
 }
 
-/* Form */
+/* STILI PER I CAMPI DEL FORM */
 .RegistroForm {
     margin-bottom: 24px;
 }
@@ -153,6 +157,7 @@ body {
     color: #111827;
 }
 
+/* PULSANTE PRINCIPALE (Accedi / Registrati) */
 .registroButton {
     width: 100%;
     padding: 16px;
@@ -171,6 +176,7 @@ body {
     transform: translateY(-2px);
 }
 
+/* LINK PER SWITCHARE TRA LOGIN E REGISTRAZIONE */
 .registroToggle {
     text-align: center;
     margin-top: 28px;
@@ -184,61 +190,24 @@ body {
     cursor: pointer;
 }
 
-/* Responsive: orizzontale (landscape) */
+/* RESPONSIVE: orientamento orizzontale (es. tablet o landscape) */
 @media (orientation: landscape) and (max-height: 600px) {
-    body {
-        padding: 10px;
-    }
-    .global-logo {
-        top: 10px;
-        left: 10px;
-    }
-    .global-logo .logo-img {
-        width: 36px;
-        height: 36px;
-    }
-    .global-logo h1 {
-        font-size: 20px;
-    }
-    .theme-toggle-global {
-        top: 10px;
-        right: 10px;
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
-    }
-    .containerRegistro {
-        padding: 25px 20px;
-        margin: 70px auto;
-        max-width: 420px;
-    }
-    #registroSubtitle {
-        font-size: 24px;
-    }
-    .RegistroForm input {
-        padding: 12px 16px;
-    }
-    .registroButton {
-        padding: 12px;
-    }
+    body { padding: 10px; }
+    .global-logo { top: 10px; left: 10px; }
+    .global-logo .logo-img { width: 36px; height: 36px; }
+    .global-logo h1 { font-size: 20px; }
+    .theme-toggle-global { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 20px; }
+    .containerRegistro { padding: 25px 20px; margin: 70px auto; max-width: 420px; }
+    #registroSubtitle { font-size: 24px; }
+    .RegistroForm input { padding: 12px 16px; }
+    .registroButton { padding: 12px; }
 }
 
-/* Responsive: schermi molto piccoli (portrait) */
+/* RESPONSIVE: schermi piccoli (telefono verticale) */
 @media (max-width: 480px) {
-    .global-logo h1 {
-        font-size: 20px;
-    }
-    .global-logo .logo-img {
-        width: 40px;
-        height: 40px;
-    }
-    .containerRegistro {
-        padding: 30px 20px;
-    }
-    #registroSubtitle {
-        font-size: 24px;
-    }
-    .RegistroForm input {
-        padding: 14px 18px;
-    }
+    .global-logo h1 { font-size: 20px; }
+    .global-logo .logo-img { width: 40px; height: 40px; }
+    .containerRegistro { padding: 30px 20px; }
+    #registroSubtitle { font-size: 24px; }
+    .RegistroForm input { padding: 14px 18px; }
 }

@@ -1,11 +1,13 @@
+/* VARIABILI CSS per il tema scuro (impostazione predefinita) */
 :root {
-    --bg: #0f0f0f;
-    --card: #1a1a1a;
-    --accent: #22c55e;
-    --text: #f0f0f0;
-    --muted: #aaaaaa;
+    --bg: #0f0f0f;          /* sfondo principale */
+    --card: #1a1a1a;        /* sfondo delle sezioni (scan e manuale) */
+    --accent: #22c55e;      /* verde per accenti e pulsanti */
+    --text: #f0f0f0;        /* colore testo principale */
+    --muted: #aaaaaa;       /* colore testo secondario (non usato direttamente) */
 }
 
+/* VARIABILI per il tema chiaro: sovrascritte quando data-theme="light" */
 [data-theme="light"] {
     --bg: #f8fafc;
     --card: #ffffff;
@@ -14,20 +16,23 @@
     --muted: #64748b;
 }
 
+/* Reset CSS base */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Stile del body: font, sfondo variabile, altezza piena finestra, scroll verticale permesso */
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
-    overflow-y: auto;          /* permette scroll verticale */
+    overflow-y: auto;          /* permette scroll se il contenuto è più alto della finestra */
 }
 
+/* Contenitore principale per la versione mobile: flex colonna, padding ridotto, gap tra elementi */
 .mobile-connect-container {
     display: flex;
     flex-direction: column;
@@ -36,12 +41,12 @@ body {
     gap: 20px;
 }
 
-/* Header */
+/* ========== HEADER ========== */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: wrap;           /* su schermi piccoli gli elementi vanno a capo */
     gap: 12px;
 }
 .logo-title {
@@ -64,6 +69,8 @@ body {
     align-items: center;
     gap: 10px;
 }
+
+/* Pulsante cambio tema (mobile) */
 .theme-toggle {
     background: #1a1a1a;
     border: 2px solid #444;
@@ -82,6 +89,8 @@ body {
     border-color: #cbd5e1;
     color: #111;
 }
+
+/* Pulsante logout (rosso) */
 .logout-btn {
     background: #e74c3c;
     color: white;
@@ -92,6 +101,8 @@ body {
     font-size: 14px;
     cursor: pointer;
 }
+
+/* Badge nome utente (verde) */
 .user-display {
     background: #22c55e;
     color: #111;
@@ -104,7 +115,7 @@ body {
     gap: 6px;
 }
 
-/* Greeting */
+/* Messaggio di benvenuto */
 .greeting {
     font-size: 20px;
     font-weight: 600;
@@ -112,16 +123,16 @@ body {
     margin: 0;
 }
 
-/* Contenitore flessibile per le due sezioni */
+/* Contenitore flessibile per le due sezioni (scan e manuale) */
 .connect-row {
-    flex: 1;
+    flex: 1;                     /* occupa tutto lo spazio rimanente */
     display: flex;
-    flex-direction: column;
+    flex-direction: column;      /* in verticale di default (mobile portrait) */
     gap: 30px;
     justify-content: center;
 }
 
-/* Sezione scansione */
+/* Sezione scansione QR */
 .scan-section {
     background: var(--card);
     border-radius: 28px;
@@ -146,11 +157,12 @@ body {
     width: 100%;
     transition: transform 0.1s;
 }
+/* Effetto tattile: al click si rimpicciolisce leggermente (feedback tattile) */
 .scan-button:active {
     transform: scale(0.98);
 }
 
-/* Sezione manuale */
+/* Sezione inserimento manuale ID */
 .manual-section {
     background: var(--card);
     border-radius: 28px;
@@ -193,7 +205,7 @@ body {
     transform: scale(0.98);
 }
 
-/* Messaggio errore */
+/* Stile per i messaggi di errore (rosso) */
 .error-message {
     color: #ef4444;
     background-color: rgba(239, 68, 68, 0.15);
@@ -206,20 +218,21 @@ body {
     text-align: center;
 }
 
-/* ORIENTAZIONE ORIZZONTALE */
+/* ORIENTAZIONE ORIZZONTALE (landscape): affianca le due sezioni */
 @media (orientation: landscape) {
     .connect-row {
-        flex-direction: row;
+        flex-direction: row;      /* da colonna a riga */
         align-items: stretch;
         gap: 30px;
     }
     .scan-section,
     .manual-section {
-        flex: 1;
+        flex: 1;                  /* stessa larghezza */
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
+    /* I pulsanti vengono spinti in basso all'interno di ogni card */
     .scan-button,
     .connect-button {
         margin-top: auto;

@@ -2,15 +2,22 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <!-- viewport: assicura che la pagina sia scalabile sui dispositivi mobili, ma con user-scalable=no impedisce lo zoom (tipico per app) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>NEXORA Smart Fridge - Connetti Frigorifero</title>
+    <!-- Foglio di stile specifico per la pagina di connessione -->
     <link rel="stylesheet" href="../CSS/styleConnetti.css">
+    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
+    <!-- Script JavaScript per la logica di connessione, tema e logout -->
     <script src="../JS/scriptConnetti.js" defer></script>
 </head>
 <body>
+    <!-- Contenitore principale: organizza header, titolo e sezioni di connessione -->
     <div class="containerSito">
+        <!-- HEADER: logo, pulsante tema, logout, nome utente (identico alle altre pagine) -->
         <div class="header">
             <div class="header-left">
                 <div class="logo-placeholder">
@@ -19,36 +26,46 @@
                 </div>
             </div>
             <div class="header-right">
+                <!-- Pulsante per cambiare tema (sole/luna) -->
                 <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
+                <!-- Pulsante logout: chiama la funzione globale logout() -->
                 <button onclick="logout()" class="logout-btn">ESCI</button>
+                <!-- Badge con nome utente -->
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
+
+        <!-- Messaggio di benvenuto personalizzato con il nome dell'utente -->
         <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, collega il tuo frigorifero</p>
 
+        <!-- Titolo principale della pagina -->
         <h1 class="page-title">Connetti al tuo Frigorifero</h1>
 
+        <!-- Contenitore a due colonne: QR code (sinistra) e inserimento manuale ID (destra) -->
         <div class="connect-container">
-            <!-- Card QR (nessun input) -->
+            <!-- Card QR: per connettersi tramite scansione telefono -->
             <div class="connect-card">
                 <h2>📱 Scansiona dal telefono</h2>
                 <p>Usa la fotocamera del tuo telefono per connetterti</p>
                 <div class="qr-wrapper">
+                    <!-- Immagine statica del QR code (deve essere generata in base all'URL di connessione) -->
                     <img id="qrImage" src="../IMG/QRSitoTelefono.png" alt="QR Code" class="qr-code-img">
                     <p class="qr-hint">Scansiona questo QR con il telefono</p>
                 </div>
             </div>
 
-            <!-- Card Manuale con messaggio errore -->
+            <!-- Card connessione manuale: inserimento ID frigorifero -->
             <div class="connect-card">
                 <h2>🔢 Inserisci ID</h2>
                 <p>Non riesci a usare il QR?</p>
 
-                <!-- MESSAGGIO ERRORE ROSSO -->
+                <!-- Contenitore per i messaggi di errore (es. ID vuoto o formato errato) -->
                 <div id="errorContainer" class="error-message" style="display:none;"></div>
 
                 <br>
+                <!-- Campo input per l'ID del frigorifero (deve iniziare con "FRG-") -->
                 <input type="text" id="deviceId" placeholder="ID del frigorifero (es. FRG-987654)" class="manual-input">
+                <!-- Bottone che avvia la connessione manuale -->
                 <button onclick="connectManual()" class="registroButton">Connetti</button>
             </div>
         </div>
