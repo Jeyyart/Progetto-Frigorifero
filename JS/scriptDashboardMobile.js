@@ -16,10 +16,11 @@ let currentUser = null;
 let currentDeviceId = null;
 let modelsLoaded = false;
 let pendingDoorState = false;
-let targetCameraZ = 24.0;          // più dezoomato
-const closedCameraZ = 24.0;        // distanza quando chiuso
-const openCameraZ = 30.0;          // più lontano per modello aperto
-const cameraY = 2.2;               // modello più in alto
+let targetCameraZ = 24.0;
+const closedCameraZ = 24.0;
+const openCameraZ = 30.0;
+const cameraY = 2.2;
+const modelYOffset = 2.5;          // ← OFFSET VERTICALE: aumenta per alzare ancora di più il modello
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -39,7 +40,6 @@ function processReadings(readings) {
     }));
 }
 
-// --- Formattazione con un decimale, toglie .0 ---
 function formatValueWithDecimal(value) {
     const rounded = Math.round(value * 10) / 10;
     const str = rounded.toFixed(1);
@@ -53,7 +53,6 @@ function formatTemperatureHumidity(temp, hum) {
     };
 }
 
-// --- Rilevamento cambi di stato della porta ---
 function getDoorStateChanges(readings) {
     const changes = [];
     for (let i = 1; i < readings.length; i++) {
@@ -176,12 +175,8 @@ function addSwipeListener() {
         const diff = startX - endX;
         if (Math.abs(diff) < 80) return;
         
+        currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
         const tabs = document.querySelectorAll('.chart-tab');
-        if (diff > 0) {
-            currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
-        } else {
-            currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
-        }
         tabs.forEach(t => t.classList.toggle('active', t.dataset.type === currentChartType));
         updateChart();
     });
@@ -211,7 +206,7 @@ const mockReadings = [
 function centerModel(model) {
     const box = new THREE.Box3().setFromObject(model);
     const center = box.getCenter(new THREE.Vector3());
-    model.position.set(-center.x, -center.y, -center.z);
+    model.position.set(-center.x, -center.y + modelYOffset, -center.z);   // ← qui viene alzato il modello
 }
 
 function switchModel(isOpen) {
