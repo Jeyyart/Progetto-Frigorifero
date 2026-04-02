@@ -1,21 +1,22 @@
+
 console.log('✅ scriptDashboard.js CARICATO - layout originale ripristinato');
 
 let chart = null;
 let currentChartType = 'temperature';
 let readingsHistory = [];
-let modelGroup = null;          // gruppo che ruota (centrato)
+let modelGroup = null;
 let modelClosed = null;
 let modelOpen = null;
-let currentModel = null;        // riferimento al modello attualmente nel gruppo
+let currentModel = null;
 let scene = null;
 let camera = null;
 let renderer = null;
 let rotationY = 0;
-let autoRotateSpeed = 0.002;    // rotazione molto lenta
+let autoRotateSpeed = 0.002;
 let currentUser = null;
 let currentDeviceId = null;
-let modelsReady = false;         // entrambi i modelli caricati?
-let pendingDoorState = false;    // stato in attesa se modelli non pronti
+let modelsReady = false;
+let pendingDoorState = false;
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -25,12 +26,13 @@ function parseTimestamp(ts) { return new Date(ts); }
 function processReadings(readings) {
     return readings.map(r => ({
         timestamp: parseTimestamp(r.timestame || r.timestamp),
-        temperature: Math.round(r.temperatura || r.temperature),
-        humidity: Math.round(r.umidita || r.humidity),
+        temperature: r.temperatura || r.temperature,   // ← RIMOSSO Math.round
+        humidity: r.umidita || r.humidity,             // ← RIMOSSO Math.round
         doorOpen: r.portaAperta || r.doorOpen
     }));
 }
 
+// === FORMATTAZIONE CON DECIMALE (uguale a mobile) ===
 function formatValueWithDecimal(value) {
     const rounded = Math.round(value * 10) / 10;
     const str = rounded.toFixed(1);
@@ -71,7 +73,6 @@ function getLastStateDuration(readings, currentState) {
         }
     }
     if (!lastChange) {
-        // Nessun cambio prima, usa la prima rilevazione
         lastChange = { timestamp: readings[0].timestamp, state: currentState };
     }
     const diffMs = Date.now() - lastChange.timestamp.getTime();
@@ -96,22 +97,19 @@ function getTodayEvents(readings) {
                   }));
 }
 
-
-
 function updateMetrics(readings) {
     if (!readings.length) return;
     const latest = readings[readings.length - 1];
     const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
+    
     document.getElementById('tempValue').textContent = temp;
     document.getElementById('humidityValue').textContent = hum;
 
     const isOpen = latest.doorOpen;
-    currentDoorState = isOpen;
     document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
     document.getElementById('doorCard').classList.toggle('open', isOpen);
     const duration = getLastStateDuration(readings, isOpen);
     document.getElementById('doorTime').textContent = `${isOpen ? 'Aperta' : 'Chiusa'} da ${duration}`;
-
 }
 
 function updateChart() {
@@ -139,7 +137,6 @@ function addTabListeners() {
     });
 }
 
-/* Swipe orizzontale su telefono per cambiare grafico */
 function addSwipeListener() {
     const swipeArea = document.getElementById('chartSwipeArea');
     let startX = 0;
@@ -149,12 +146,8 @@ function addSwipeListener() {
         const diff = startX - endX;
         if (Math.abs(diff) < 80) return;
         
+        currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
         const tabs = document.querySelectorAll('.chart-tab');
-        if (diff > 0) { // swipe sinistra → prossima
-            currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
-        } else { // swipe destra → precedente
-            currentChartType = currentChartType === 'temperature' ? 'humidity' : 'temperature';
-        }
         tabs.forEach(t => t.classList.toggle('active', t.dataset.type === currentChartType));
         updateChart();
     });
@@ -181,30 +174,23 @@ const mockReadings = [
     { timestame: "2026-03-30T20:00:00Z", temperatura: 8.9, umidita: 33, portaAperta: true }
 ];
 
-/* Funzione per centrare un modello all'interno del gruppo */
 function centerModel(model) {
     const box = new THREE.Box3().setFromObject(model);
     const center = box.getCenter(new THREE.Vector3());
     model.position.set(-center.x, -center.y, -center.z);
 }
 
-/* Cambia il modello nel gruppo: rimuove quello attuale e aggiunge quello richiesto */
 function switchModel(isOpen) {
     if (!modelsReady) return;
-    
     const targetModel = isOpen ? modelOpen : modelClosed;
-    if (currentModel === targetModel) return; // già attivo
-    
-    if (currentModel) {
-        modelGroup.remove(currentModel);
-    }
+    if (currentModel === targetModel) return;
+    if (currentModel) modelGroup.remove(currentModel);
     if (targetModel) {
         modelGroup.add(targetModel);
         currentModel = targetModel;
     }
 }
 
-/* 3D - Rotazione su sé stesso con gruppo centrato */
 function init3D() {
     const canvas = document.getElementById('three-canvas');
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -212,7 +198,7 @@ function init3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     scene = new THREE.Scene();
-     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
 
     camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
@@ -230,16 +216,13 @@ function init3D() {
 
     const loader = new THREE.GLTFLoader();
     
-    // Carica modello chiuso (non aggiungerlo subito al gruppo)
     loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => {
         modelClosed = gltf.scene;
         modelClosed.scale.set(1.8, 1.8, 1.8);
         centerModel(modelClosed);
-        // Non aggiungere al gruppo ora
         checkModelsReady();
     });
     
-    // Carica modello aperto
     loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => {
         modelOpen = gltf.scene;
         modelOpen.scale.set(1.8, 1.8, 1.8);
@@ -250,7 +233,6 @@ function init3D() {
     function checkModelsReady() {
         if (modelClosed && modelOpen && !modelsReady) {
             modelsReady = true;
-            // Applica lo stato della porta che era in attesa
             switchModel(pendingDoorState);
         }
     }
@@ -304,7 +286,6 @@ function initChart() {
         }
     });
 
-    // Assi neri in tema chiaro
     const observer = new MutationObserver(() => {
         if (!chart) return;
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -314,10 +295,9 @@ function initChart() {
         chart.options.scales.x.grid.color = isLight ? '#cbd5e1' : '#333';
         chart.update();
 
-         if (scene) {
+        if (scene) {
             scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x111111);
         }
-
     });
     observer.observe(document.documentElement, { attributes: true });
 }
@@ -338,7 +318,6 @@ function initAll() {
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
-    // Tema + Logout
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
