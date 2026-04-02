@@ -17,8 +17,8 @@ let currentDeviceId = null;
 let modelsLoaded = false;
 let pendingDoorState = false;
 let targetCameraZ = 24.0;
-const closedCameraZ = 22.0;
-const openCameraZ = 26.0;
+const closedCameraZ = 18.0;
+const openCameraZ = 23.0;
 const cameraY = 2.2;
 const modelYOffset = 1.8;          // ← OFFSET VERTICALE: aumenta per alzare ancora di più il modello
 
