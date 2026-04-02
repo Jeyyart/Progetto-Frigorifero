@@ -20,7 +20,7 @@ let targetCameraZ = 24.0;
 const closedCameraZ = 18.0;
 const openCameraZ = 23.0;
 const cameraY = 2.2;
-const modelYOffset = 1.8;          // ← OFFSET VERTICALE: aumenta per alzare ancora di più il modello
+const modelYOffset = 1.4;          // ← OFFSET VERTICALE: aumenta per alzare ancora di più il modello
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
