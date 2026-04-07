@@ -42,12 +42,17 @@ function parseTimestamp(ts) {
 }
 
 function processReadings(readings) {
-    return readings.map(r => ({
-        timestamp: parseTimestamp(r.timestame || r.timestamp),
-        temperature: r.temperatura || r.temperature,
-        humidity: r.umidita || r.humidity,
-        doorOpen: r.portaAperta || r.doorOpen
-    }));
+    return readings.map(r => {
+        let date = parseTimestamp(r.timestame || r.timestamp);
+        // Correzione: i timestamp sono anticipati di 2 ore → sottraiamo 2 ore
+        date = new Date(date.getTime() + 7200000);
+        return {
+            timestamp: date,
+            temperature: r.temperatura || r.temperature,
+            humidity: r.umidita || r.humidity,
+            doorOpen: r.portaAperta || r.doorOpen
+        };
+    });
 }
 
 function formatValueWithDecimal(value) {
@@ -114,25 +119,27 @@ function getTodayEvents(readings) {
                   }));
 }
 
+// ========== AGGIORNAMENTO METRICHE E MODELLO ==========
 function updateMetrics(readings) {
     if (!readings.length) return;
     const latest = readings[readings.length - 1];
-    const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
-    document.getElementById('tempValue').textContent = temp;
-    document.getElementById('humidityValue').textContent = hum;
-
     const isOpen = latest.doorOpen;
-    document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
-    document.getElementById('doorCard').classList.toggle('open', isOpen);
-    const duration = getLastStateDuration(readings, isOpen);
-    document.getElementById('doorTime').textContent = `${isOpen ? 'Aperta' : 'Chiusa'} da ${duration}`;
-    
+
+    // Aggiorna modello 3D (se pronto, altrimenti salva lo stato in attesa)
     if (modelsLoaded) {
         switchModel(isOpen);
         updateCameraZoom(isOpen);
     } else {
         pendingDoorState = isOpen;
     }
+
+    const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
+    document.getElementById('tempValue').textContent = temp;
+    document.getElementById('humidityValue').textContent = hum;
+    document.getElementById('doorStatus').textContent = isOpen ? '🚪 Aperta' : '🚪 Chiusa';
+    document.getElementById('doorCard').classList.toggle('open', isOpen);
+    const duration = getLastStateDuration(readings, isOpen);
+    document.getElementById('doorTime').textContent = `${isOpen ? 'Aperta' : 'Chiusa'} da ${duration}`;
 }
 
 function updateCameraZoom(isOpen) {
@@ -214,14 +221,14 @@ function generateDynamicMock(deviceId) {
     ];
 }
 
-// ========== CHIAMATA API CORRETTA ==========
+// ========== CHIAMATA API ==========
 async function fetchAndUpdate() {
     console.log(`🔄 Richiesta API per device: ${currentDeviceId}`);
     try {
         const res = await fetch(API_URL, {
             method: "GET",
             headers: {
-                "FRIDGE_KEY": currentDeviceId   // underscore, valore = ID frigorifero
+                "FRIDGE_KEY": currentDeviceId
             }
         });
 
@@ -236,7 +243,6 @@ async function fetchAndUpdate() {
         let readingsArray = Array.isArray(data) ? data : (data.data || data.readings);
         if (!readingsArray) throw new Error("Formato dati non riconosciuto");
 
-        // Filtra per deviceId se presente
         if (readingsArray[0]?.deviceId) {
             readingsArray = readingsArray.filter(r => r.deviceId === currentDeviceId);
         }
@@ -357,6 +363,16 @@ function init3D() {
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
     });
+
+    // Fallback: se dopo 5 secondi i modelli non sono caricati, forza il modello chiuso
+    setTimeout(() => {
+        if (!modelsLoaded) {
+            console.warn('⚠️ Modelli 3D non caricati entro 5 secondi. Uso modello chiuso di default.');
+            modelsLoaded = true;
+            switchModel(pendingDoorState);
+            updateCameraZoom(pendingDoorState);
+        }
+    }, 5000);
 }
 
 function initChart() {

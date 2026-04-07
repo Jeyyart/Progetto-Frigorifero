@@ -192,6 +192,25 @@ body {
     box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.3);
 }
 
+.device-card.coming-soon {
+    opacity: 0.7;
+    filter: grayscale(0.3);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.device-status {
+    font-size: 14px;
+    margin-top: 12px;
+    font-weight: 500;
+}
+.device-status.available {
+    color: var(--accent);
+}
+.device-status.soon {
+    color: var(--muted);
+}
+
+
 /* Icona del dispositivo (emoji) */
 .device-icon {
     font-size: 80px;

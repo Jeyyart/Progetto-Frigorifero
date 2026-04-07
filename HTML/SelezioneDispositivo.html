@@ -39,25 +39,29 @@
         <div class="main-content">
             <!-- Messaggio di benvenuto personalizzato con il nome dell'utente -->
             <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, scegli il dispositivo</p>
-
+            
             <!-- Griglia di card: ogni card rappresenta un dispositivo (Frigo, Forno, Microonde, Tostapane) -->
             <div class="devices-grid">
                 <!-- Al click su una card, viene chiamata selectDevice() (definita in JS) -->
                 <div class="device-card active" onclick="selectDevice()">
                     <div class="device-icon">❄️</div>
                     <h2>Frigorifero</h2>
+                    <p class="device-status available">✅ Disponibile ora</p>
                 </div>
-                <div class="device-card active" onclick="selectDevice()">
+                <div class="device-card coming-soon">
                     <div class="device-icon">🍳</div>
                     <h2>Forno</h2>
+                    <p class="device-status soon">🔒 Prossimamente</p>
                 </div>
-                <div class="device-card active" onclick="selectDevice()">
+                <div class="device-card coming-soon">
                     <div class="device-icon">📻</div>
                     <h2>Microonde</h2>
+                    <p class="device-status soon">🔒 Prossimamente</p>
                 </div>
-                <div class="device-card active" onclick="selectDevice()">
+                <div class="device-card coming-soon">
                     <div class="device-icon">🍞</div>
                     <h2>Tostapane</h2>
+                    <p class="device-status soon">🔒 Prossimamente</p>
                 </div>
             </div>
         </div>
