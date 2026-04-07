@@ -1,5 +1,20 @@
 // Variabile che conterrà l'oggetto dell'utente corrente (recuperato dal localStorage)
 let currentUser = null;
+let messageTimeout = null;
+
+
+function showMessage(message, isError = false) {
+    const errorEl = document.getElementById('errorContainer');
+    if (messageTimeout) clearTimeout(messageTimeout);
+    errorEl.style.backgroundColor = isError ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)';
+    errorEl.style.borderColor = isError ? '#ef4444' : '#22c55e';
+    errorEl.style.color = isError ? '#ef4444' : '#22c55e';
+    errorEl.textContent = message;
+    errorEl.style.display = 'flex';
+    messageTimeout = setTimeout(() => {
+        errorEl.style.display = 'none';
+    }, 4000);
+}
 
 // Funzione principale eseguita al caricamento della pagina (window.onload)
 function applyThemeAndUser() {
@@ -49,25 +64,23 @@ function hideError() {
 
 // Funzione chiamata quando l'utente clicca su "Connetti" nella sezione manuale
 function connectManual() {
-    hideError();   // pulisce eventuali errori precedenti
+    hideError();
     const id = document.getElementById('deviceId').value.trim();
-    
-    // Controllo campo vuoto
     if (!id) {
-        showError('❌ Inserisci un ID frigorifero');
+        showMessage('❌ Inserisci un ID frigorifero', true);
         return;
     }
-    
-    // Validazione del formato ID: deve iniziare con "FRG-" (es. FRG-987654)
     if (!id.startsWith('FRG-')) {
-        showError('❌ ID non valido. Deve iniziare con "FRG-" (es. FRG-987654)');
+        showMessage('❌ ID non valido. Deve iniziare con "FRG-" (es. FRG-987654)', true);
         return;
     }
-    
-    // Se tutto ok, reindirizza alla Dashboard passando l'ID come parametro URL
-    // In questo modo la pagina Dashboard potrà leggere ?id=... e mostrare i dati di quel frigorifero
+    if (id !== 'FRG-001' && id !== 'FRG-TEMPLATE') {
+        showMessage('📌 ID non ancora supportato – sarà disponibile in futuro', false);
+        return;
+    }
     window.location.href = `../HTML/Dashboard.html?id=${id}`;
 }
+
 
 // Funzione di logout: rimuove i dati dell'utente e torna alla pagina di login
 window.logout = function() {

@@ -313,6 +313,33 @@ body {
     border-bottom-color: rgba(0,0,0,0.1);
 }
 
+.admin-select {
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid #444;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 15px;
+}
+.admin-select:hover {
+    border-color: var(--accent);
+}
+.admin-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+}
+[data-theme="light"] .admin-select {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #111827;
+}
+
+
 /* REGOLA CRITICA: se il telefono è in orientamento verticale (portrait), nasconde la dashboard e mostra l'avviso */
 @media (orientation: portrait) {
     .dashboard-landscape {

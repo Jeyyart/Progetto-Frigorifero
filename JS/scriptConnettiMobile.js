@@ -54,18 +54,25 @@ function hideError() {
 function connectDevice() {
     hideError();
     const id = document.getElementById('deviceId').value.trim();
-    
-    // Controllo campo vuoto
     if (!id) {
         showError('❌ Inserisci un ID frigorifero');
         return;
     }
-    // Validazione formato: deve iniziare con "FRG-"
     if (!id.startsWith('FRG-')) {
         showError('❌ ID non valido. Deve iniziare con "FRG-" (es. FRG-987654)');
         return;
     }
-    // Reindirizza alla Dashboard mobile passando l'ID come parametro URL
+    if (id !== 'FRG-001' && id !== 'FRG-TEMPLATE') {
+        // Mostra messaggio temporaneo verde
+        const errorEl = document.getElementById('errorContainer');
+        errorEl.style.backgroundColor = 'rgba(34, 197, 94, 0.15)';
+        errorEl.style.borderColor = '#22c55e';
+        errorEl.style.color = '#22c55e';
+        errorEl.textContent = '📌 ID non ancora supportato – sarà disponibile in futuro';
+        errorEl.style.display = 'block';
+        setTimeout(() => errorEl.style.display = 'none', 4000);
+        return;
+    }
     window.location.href = `../HTML/DashboardMobile.html?id=${encodeURIComponent(id)}`;
 }
 

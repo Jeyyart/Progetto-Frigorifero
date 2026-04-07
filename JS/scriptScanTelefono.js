@@ -26,24 +26,33 @@ function startScanner() {
     // - qrCodeSuccessCallback: eseguita quando viene rilevato un QR code valido
     // - qrCodeErrorCallback: eseguita in caso di errore (non usata, funzione vuota)
     html5QrCode.start(
-        { facingMode: "environment" },   // stesso vincolo per la videocamera
+        { facingMode: "environment" },
         config,
-        (decodedText) => {               // callback di successo: decodedText è il testo letto dal QR
-            // Verifica che il testo letto inizi con "FRG-" (ID frigorifero valido)
+        (decodedText) => {
             if (decodedText && decodedText.startsWith("FRG-")) {
-                stopScanner();           // ferma lo scanner per non leggere ripetutamente
-                alert(`✅ QR riconosciuto!\nID: ${decodedText}`);  // notifica all'utente
-                // Reindirizza alla dashboard (desktop o mobile? qui si usa Dashboard.html, versione desktop)
+                // Controllo ID supportato
+                if (decodedText !== 'FRG-001' && decodedText !== 'FRG-TEMPLATE') {
+                    const msgDiv = document.getElementById('scanMessage') || createMessageDiv();
+                    msgDiv.textContent = '📌 ID non ancora supportato – sarà disponibile in futuro';
+                    msgDiv.style.backgroundColor = 'rgba(34,197,94,0.9)';
+                    msgDiv.style.color = '#111';
+                    msgDiv.style.display = 'block';
+                    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                    return;
+                }
+                stopScanner();
                 window.location.href = `../HTML/Dashboard.html?id=${decodedText}`;
             } else {
-                // QR non valido: mostra messaggio di errore temporaneo
+                // QR non valido
                 const msgDiv = document.getElementById('scanMessage') || createMessageDiv();
                 msgDiv.textContent = '⚠️ QR non valido. Inquadra il codice NEXORA (FRG-XXXXXX)';
+                msgDiv.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                msgDiv.style.color = '#ffaa00';
                 msgDiv.style.display = 'block';
                 setTimeout(() => { msgDiv.style.display = 'none'; }, 2000);
             }
         },
-        () => {}    // callback di errore: non facciamo nulla (potremmo loggare ma non necessario)
+        () => {}
     ).catch(err => {
         // Se la fotocamera non può essere avviata (permessi negati, nessuna fotocamera, ecc.)
         console.error('Errore fotocamera:', err);
