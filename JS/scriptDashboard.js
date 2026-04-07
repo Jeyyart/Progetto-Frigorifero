@@ -18,7 +18,7 @@ let currentDeviceId = null;
 let modelsReady = false;
 let pendingDoorState = false;
 
-// Legge l'ID dalla URL, se assente usa FRG-001 (principale)
+// Legge l'ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
 currentDeviceId = urlParams.get('id');
 if (!currentDeviceId) {
@@ -28,35 +28,14 @@ if (!currentDeviceId) {
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
-// ========== DATI MOCK (usati solo se l'API fallisce) ==========
-const mockReadingsFRG001 = [
-  { timestame: new Date(Date.now() - 2*3600000).toISOString(), temperatura: 4.2, umidita: 45, portaAperta: false },
-  { timestame: new Date(Date.now() - 1*3600000).toISOString(), temperatura: 4.5, umidita: 44, portaAperta: false },
-  { timestame: new Date(Date.now() - 30*60000).toISOString(),  temperatura: 5.1, umidita: 42, portaAperta: true },
-  { timestame: new Date().toISOString(),                     temperatura: 4.8, umidita: 43, portaAperta: false }
-];
-
-const mockReadingsTemplate = [
-  { timestame: new Date(Date.now() - 3*3600000).toISOString(), temperatura: 3.5, umidita: 50, portaAperta: false },
-  { timestame: new Date(Date.now() - 2*3600000).toISOString(), temperatura: 3.8, umidita: 48, portaAperta: false },
-  { timestame: new Date(Date.now() - 1*3600000).toISOString(), temperatura: 6.2, umidita: 55, portaAperta: true },
-  { timestame: new Date(Date.now() - 30*60000).toISOString(),  temperatura: 5.9, umidita: 52, portaAperta: true },
-  { timestame: new Date().toISOString(),                       temperatura: 4.1, umidita: 49, portaAperta: false }
-];
-
-function getMockReadings(deviceId) {
-  if (deviceId === 'FRG-TEMPLATE') return mockReadingsTemplate;
-  return mockReadingsFRG001;
-}
-
-// ========== FUNZIONI DI UTILITÀ ==========
+// ========== UTILITÀ ==========
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }
 
 function processReadings(readings) {
   return readings.map(r => {
     let date = parseTimestamp(r.timestame || r.timestamp);
-    // Correzione: i timestamp sono anticipati di 2 ore → sottraiamo 2 ore
+    // Aggiunge 2 ore ai timestamp ricevuti
     date = new Date(date.getTime() + 7200000);
     return {
       timestamp: date,
@@ -113,18 +92,18 @@ function getTodayEvents(readings) {
                 .map(ev => ({ time: ev.timestamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), action: ev.changedTo }));
 }
 
-// ========== AGGIORNAMENTO METRICHE E MODELLO 3D ==========
+// ========== AGGIORNAMENTO UI ==========
 function updateMetrics(readings) {
   if (!readings.length) return;
-  const latest = readings[readings.length - 1];
-  const isOpen = latest.doorOpen;   // <-- dichiarata subito
+  const latest = readings[readings.length-1];
+  const isOpen = latest.doorOpen;
 
   if (modelsReady) {
     switchModel(isOpen);
   } else {
     pendingDoorState = isOpen;
   }
-  
+
   const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
   document.getElementById('tempValue').textContent = temp;
   document.getElementById('humidityValue').textContent = hum;
@@ -154,8 +133,9 @@ function updateTimeline() {
   timelineContainer.innerHTML = `<div class="timeline-events-list">${events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('')}</div>`;
 }
 
-// ========== GESTIONE API E MOCK ==========
+// ========== GENERAZIONE MOCK DINAMICO (SOLO FALLBACK) ==========
 function generateDynamicMock(deviceId) {
+    console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId} (API non disponibile)`);
     const now = Date.now();
     let baseTemp, baseHum;
     if (deviceId === 'FRG-TEMPLATE') {
@@ -176,22 +156,19 @@ function generateDynamicMock(deviceId) {
     ];
 }
 
+// ========== CHIAMATA API ==========
 async function fetchAndUpdate() {
     console.log(`🔄 Richiesta API per device: ${currentDeviceId}`);
     try {
         const res = await fetch(API_URL, {
             method: "GET",
             headers: {
-                "FRIDGE_KEY": currentDeviceId
+                "FRIDGE_KEY": currentDeviceId,
+                "Cache-Control": "no-cache"
             }
         });
 
-        console.log(`📡 Status: ${res.status}`);
-
-        if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errorText}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         let data = await res.json();
         let readingsArray = Array.isArray(data) ? data : (data.data || data.readings);
@@ -202,8 +179,9 @@ async function fetchAndUpdate() {
         }
 
         readingsHistory = processReadings(readingsArray);
+        console.log(`✅ Dati API ricevuti: ${readingsHistory.length} letture`);
     } catch (e) {
-        console.error("❌ Errore API:", e);
+        console.error("❌ Errore API, uso fallback dinamico:", e);
         readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
     }
     updateMetrics(readingsHistory);
@@ -211,7 +189,7 @@ async function fetchAndUpdate() {
     updateTimeline();
 }
 
-// ========== FUNZIONI PER IL MODELLO 3D ==========
+// ========== MODELLO 3D ==========
 function centerModel(model) {
   const box = new THREE.Box3().setFromObject(model);
   const center = box.getCenter(new THREE.Vector3());
@@ -309,7 +287,7 @@ function addSwipeListener() {
   });
 }
 
-// ========== INIZIALIZZAZIONE PRINCIPALE ==========
+// ========== INIZIALIZZAZIONE ==========
 function initAll() {
   currentUser = JSON.parse(localStorage.getItem('currentUser'));
   if(!currentUser) return window.location.href = '../HTML/registro.html';
@@ -322,9 +300,8 @@ function initAll() {
   addTabListeners();
   addSwipeListener();
   init3D();
-fetchAndUpdate();
-setInterval(fetchAndUpdate, 30000);
-setTimeout(fetchAndUpdate, 1000);
+  fetchAndUpdate();
+  setInterval(fetchAndUpdate, 30000);
 
   const themeBtn = document.getElementById('themeToggleBtn');
   let theme = localStorage.getItem('nexoraTheme') || 'dark';
@@ -342,26 +319,13 @@ setTimeout(fetchAndUpdate, 1000);
   if (currentUser.isAdmin) {
     document.getElementById('adminPanel').style.display = 'block';
     const selectEl = document.getElementById('adminIdSelect');
-    selectEl.innerHTML = `
-      <option value="FRG-001">FRG-001 (Principale)</option>
-      <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
-    `;
-    if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
-      selectEl.value = currentDeviceId;
-    } else {
-      selectEl.value = 'FRG-001';
-    }
-    window.switchDeviceId = function(id) {
-      currentDeviceId = id;
-      fetchAndUpdate();
-    };
+    selectEl.innerHTML = `<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>`;
+    if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
+    else selectEl.value = 'FRG-001';
+    window.switchDeviceId = function(id) { currentDeviceId = id; fetchAndUpdate(); };
     selectEl.onchange = () => window.switchDeviceId(selectEl.value);
   }
 }
 
-window.logout = function() {
-  localStorage.removeItem('currentUser');
-  window.location.href = '../HTML/registro.html';
-};
-
+window.logout = function() { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; };
 window.onload = initAll;

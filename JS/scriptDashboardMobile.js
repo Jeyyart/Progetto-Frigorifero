@@ -42,17 +42,17 @@ function parseTimestamp(ts) {
 }
 
 function processReadings(readings) {
-  return readings.map(r => {
-    let date = parseTimestamp(r.timestame || r.timestamp);
-    // Correzione: i timestamp sono anticipati di 2 ore → sottraiamo 2 ore
-    date = new Date(date.getTime() + 7200000);
-    return {
-      timestamp: date,
-      temperature: r.temperatura || r.temperature,
-      humidity: r.umidita || r.humidity,
-      doorOpen: r.portaAperta || r.doorOpen
-    };
-  });
+    return readings.map(r => {
+        let date = parseTimestamp(r.timestame || r.timestamp);
+        // Aggiunge 2 ore ai timestamp ricevuti
+        date = new Date(date.getTime() + 7200000);
+        return {
+            timestamp: date,
+            temperature: r.temperatura || r.temperature,
+            humidity: r.umidita || r.humidity,
+            doorOpen: r.portaAperta || r.doorOpen
+        };
+    });
 }
 
 function formatValueWithDecimal(value) {
@@ -123,7 +123,7 @@ function getTodayEvents(readings) {
 function updateMetrics(readings) {
     if (!readings.length) return;
     const latest = readings[readings.length - 1];
-    const isOpen = latest.doorOpen;   // dichiarata subito
+    const isOpen = latest.doorOpen;
 
     if (modelsLoaded) {
         switchModel(isOpen);
@@ -198,8 +198,9 @@ function addSwipeListener() {
     });
 }
 
-// ========== MOCK DINAMICO ==========
+// ========== GENERAZIONE MOCK DINAMICO (SOLO FALLBACK) ==========
 function generateDynamicMock(deviceId) {
+    console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId} (API non disponibile)`);
     const now = Date.now();
     let baseTemp, baseHum;
     if (deviceId === 'FRG-TEMPLATE') {
@@ -243,8 +244,9 @@ async function fetchAndUpdate() {
         }
 
         readingsHistory = processReadings(readingsArray);
+        console.log(`✅ Dati API ricevuti: ${readingsHistory.length} letture`);
     } catch (e) {
-        console.error("❌ Errore API, uso mock dinamico:", e);
+        console.error("❌ Errore API, uso fallback dinamico:", e);
         readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
     }
     updateMetrics(readingsHistory);
@@ -419,7 +421,6 @@ function initAll() {
     init3D();
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
-    setTimeout(fetchAndUpdate, 1000);  // refresh extra dopo 1 secondo
 
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
