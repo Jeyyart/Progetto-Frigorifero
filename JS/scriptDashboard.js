@@ -116,16 +116,15 @@ function getTodayEvents(readings) {
 // ========== AGGIORNAMENTO METRICHE E MODELLO 3D ==========
 function updateMetrics(readings) {
   if (!readings.length) return;
-  const latest = readings[readings.length-1];
-  const isOpen = latest.doorOpen;
+  const latest = readings[readings.length - 1];
+  const isOpen = latest.doorOpen;   // <-- dichiarata subito
 
-  // Aggiorna modello 3D (se pronto, altrimenti salva lo stato in attesa)
   if (modelsReady) {
     switchModel(isOpen);
   } else {
     pendingDoorState = isOpen;
   }
-
+  
   const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
   document.getElementById('tempValue').textContent = temp;
   document.getElementById('humidityValue').textContent = hum;
@@ -323,8 +322,9 @@ function initAll() {
   addTabListeners();
   addSwipeListener();
   init3D();
-  fetchAndUpdate();
-  setInterval(fetchAndUpdate, 30000);
+fetchAndUpdate();
+setInterval(fetchAndUpdate, 30000);
+setTimeout(fetchAndUpdate, 1000);
 
   const themeBtn = document.getElementById('themeToggleBtn');
   let theme = localStorage.getItem('nexoraTheme') || 'dark';

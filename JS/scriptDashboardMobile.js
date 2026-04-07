@@ -23,7 +23,7 @@ const openCameraZ = 23.0;
 const cameraY = 2.2;
 const modelYOffset = 1.4;
 
-// Legge l'ID dalla URL, se assente usa FRG-001 (principale)
+// Legge l'ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
 currentDeviceId = urlParams.get('id');
 if (!currentDeviceId) {
@@ -42,17 +42,17 @@ function parseTimestamp(ts) {
 }
 
 function processReadings(readings) {
-    return readings.map(r => {
-        let date = parseTimestamp(r.timestame || r.timestamp);
-        // Correzione: i timestamp sono anticipati di 2 ore → sottraiamo 2 ore
-        date = new Date(date.getTime() + 7200000);
-        return {
-            timestamp: date,
-            temperature: r.temperatura || r.temperature,
-            humidity: r.umidita || r.humidity,
-            doorOpen: r.portaAperta || r.doorOpen
-        };
-    });
+  return readings.map(r => {
+    let date = parseTimestamp(r.timestame || r.timestamp);
+    // Correzione: i timestamp sono anticipati di 2 ore → sottraiamo 2 ore
+    date = new Date(date.getTime() + 7200000);
+    return {
+      timestamp: date,
+      temperature: r.temperatura || r.temperature,
+      humidity: r.umidita || r.humidity,
+      doorOpen: r.portaAperta || r.doorOpen
+    };
+  });
 }
 
 function formatValueWithDecimal(value) {
@@ -123,9 +123,8 @@ function getTodayEvents(readings) {
 function updateMetrics(readings) {
     if (!readings.length) return;
     const latest = readings[readings.length - 1];
-    const isOpen = latest.doorOpen;
+    const isOpen = latest.doorOpen;   // dichiarata subito
 
-    // Aggiorna modello 3D (se pronto, altrimenti salva lo stato in attesa)
     if (modelsLoaded) {
         switchModel(isOpen);
         updateCameraZoom(isOpen);
@@ -199,7 +198,7 @@ function addSwipeListener() {
     });
 }
 
-// ========== MOCK DINAMICO (fallback) ==========
+// ========== MOCK DINAMICO ==========
 function generateDynamicMock(deviceId) {
     const now = Date.now();
     let baseTemp, baseHum;
@@ -228,16 +227,12 @@ async function fetchAndUpdate() {
         const res = await fetch(API_URL, {
             method: "GET",
             headers: {
-                "FRIDGE_KEY": currentDeviceId
+                "FRIDGE_KEY": currentDeviceId,
+                "Cache-Control": "no-cache"
             }
         });
 
-        console.log(`📡 Status: ${res.status}`);
-
-        if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errorText}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         let data = await res.json();
         let readingsArray = Array.isArray(data) ? data : (data.data || data.readings);
@@ -249,7 +244,7 @@ async function fetchAndUpdate() {
 
         readingsHistory = processReadings(readingsArray);
     } catch (e) {
-        console.error("❌ Errore API:", e);
+        console.error("❌ Errore API, uso mock dinamico:", e);
         readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
     }
     updateMetrics(readingsHistory);
@@ -364,7 +359,6 @@ function init3D() {
         renderer.setSize(width, height);
     });
 
-    // Fallback: se dopo 5 secondi i modelli non sono caricati, forza il modello chiuso
     setTimeout(() => {
         if (!modelsLoaded) {
             console.warn('⚠️ Modelli 3D non caricati entro 5 secondi. Uso modello chiuso di default.');
@@ -425,6 +419,7 @@ function initAll() {
     init3D();
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
+    setTimeout(fetchAndUpdate, 1000);  // refresh extra dopo 1 secondo
 
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
