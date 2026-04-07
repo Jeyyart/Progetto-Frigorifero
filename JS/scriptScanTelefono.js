@@ -3,7 +3,7 @@ let html5QrCode = null;
 
 // Funzione per estrarre l'ID frigorifero da un testo (URL o ID diretto)
 function extractFridgeIdFromText(text) {
-    // Pattern per URL: https://progetto-frigorifero.vercel.app/HTML/Dashboard.html?id=FRG-...
+    // Pattern per URL: https://progetto-frigorifero-lrcq.vercel.app/HTML/Dashboard.html?id=FRG-...
     const urlPattern = /https:\/\/progetto-frigorifero-lrcq\.vercel\.app\/HTML\/Dashboard\.html\?id=(FRG-[A-Z0-9]+)/i;
 
     const match = text.match(urlPattern);
