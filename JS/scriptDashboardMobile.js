@@ -23,6 +23,14 @@ const openCameraZ = 23.0;       // distanza telecamera quando porta aperta (più
 const cameraY = 2.2;            // altezza della telecamera (sull'asse Y)
 const modelYOffset = 1.4;       // sposta il modello più in alto per centrarlo meglio nella vista
 
+const urlParams = new URLSearchParams(window.location.search);
+currentDeviceId = urlParams.get('id');
+if (!currentDeviceId) {
+  console.error("Nessun ID frigorifero specificato");
+  // Mostra un messaggio all'utente o usa un default
+  currentDeviceId = "FRG-987654";
+}
+
 // URL dell'API per recuperare i dati del frigorifero (backend su Railway)
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -205,7 +213,12 @@ async function fetchAndUpdate() {
     try {
         let url = API_URL;
         if (currentDeviceId) url += `?id=${currentDeviceId}`;
-        const res = await fetch(url);
+        const res = await fetch(url, {
+            method: "GET",
+            headers: {
+                "FRIDGE-KEY": currentDeviceId
+            }
+        });
         const data = res.ok ? await res.json() : mockReadings;
         readingsHistory = processReadings(Array.isArray(data) ? data : [data]);
     } catch(e) {

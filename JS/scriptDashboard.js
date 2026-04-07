@@ -18,6 +18,15 @@ let currentDeviceId = null;     // ID del frigorifero selezionato (es. FRG-98765
 let modelsReady = false;        // flag: true quando entrambi i modelli 3D sono caricati
 let pendingDoorState = false;   // stato della porta in attesa che i modelli siano pronti
 
+const urlParams = new URLSearchParams(window.location.search);
+currentDeviceId = urlParams.get('id');
+if (!currentDeviceId) {
+  console.error("Nessun ID frigorifero specificato");
+  // Mostra un messaggio all'utente o usa un default
+  currentDeviceId = "FRG-987654";
+}
+
+
 // URL dell'API per recuperare i dati del frigorifero (backend su Railway)
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -174,7 +183,14 @@ async function fetchAndUpdate() {
     try {
         let url = API_URL;
         if (currentDeviceId) url += `?id=${currentDeviceId}`;
-        const res = await fetch(url);
+        
+        const res = await fetch(url, {
+            method: "GET",
+            headers: {
+                "FRIDGE-KEY": currentDeviceId
+            }
+        });
+
         const data = res.ok ? await res.json() : mockReadings;
         readingsHistory = processReadings(Array.isArray(data) ? data : [data]);
     } catch(e) {
