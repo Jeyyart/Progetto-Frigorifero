@@ -3,8 +3,8 @@ let html5QrCode = null;
 
 // Funzione per estrarre l'ID frigorifero da un testo (URL o ID diretto)
 function extractFridgeIdFromText(text) {
-    // Pattern per URL Vercel con qualsiasi suffisso (es. progetto-frigorifero-lrcq)
-    const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard\.html\?id=(FRG-[A-Z0-9]+)/i;
+    // Pattern per URL Vercel con qualsiasi suffisso, accetta sia Dashboard.html che DashboardMobile.html
+    const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard(?:Mobile)?\.html\?id=(FRG-[A-Z0-9]+)/i;
     const match = text.match(urlPattern);
     if (match && match[1]) {
         console.log(`✅ ID estratto da URL: ${match[1]}`);
@@ -90,7 +90,8 @@ function startScanner() {
                     return;
                 }
                 stopScanner();
-                window.location.href = `../HTML/Dashboard.html?id=${fridgeId}`;
+                // Reindirizza alla dashboard MOBILE (ottimizzata per telefono)
+                window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
             } else {
                 showTemporaryMessage('⚠️ QR non valido. Inquadra un codice NEXORA valido (FRG-XXXX)');
             }
