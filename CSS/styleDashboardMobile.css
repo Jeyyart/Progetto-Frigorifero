@@ -69,28 +69,41 @@ body {
 .data-column {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 8px 20px 30px 20px;   /* ridotto padding-top da 20px a 8px */
     background: var(--bg);
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-top: 5px;
 }
+
+/* Header mobile più compatto */
 .header-mobile {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 6px;            /* ridotto da 15px a 6px */
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 6px;
 }
+
+
 .logo-mobile { display: flex; align-items: center; gap: 8px; }
-.logo-img { width: 40px; height: 40px; }
-.logo-mobile h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+.logo-img {
+    width: 36px;
+    height: 36px;
+}
+
+.logo-mobile h1 {
+    font-size: 18px;
+}
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .theme-toggle {
     background: #1a1a1a;
     border: 2px solid #444;
     color: #fff;
-    width: 44px; height: 44px;
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
     border-radius: 12px;
-    font-size: 22px;
     cursor: pointer;
 }
 [data-theme="light"] .theme-toggle {
@@ -102,46 +115,49 @@ body {
     background: #e74c3c;
     color: white;
     border: none;
-    padding: 8px 20px;
+     padding: 6px 14px;
+    
     border-radius: 30px;
     font-weight: 700;
-    font-size: 14px;
+   font-size: 12px;
     cursor: pointer;
 }
 .user-display {
     background: #22c55e;
     color: #111;
-    padding: 8px 16px;
+    padding: 6px 12px;
+    
     border-radius: 30px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 6px;
 }
-.greeting { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+.greeting {  font-size: 15px;
+    margin-bottom: 10px;  font-weight: 600;}
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 25px;
+      gap: 8px;
+    margin-bottom: 16px;
 }
 .metric-card {
     background: var(--card);
     border-radius: 16px;
-    padding: 16px 8px;
+    padding: 10px 6px;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .metric-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
-.metric-value { font-size: 28px; font-weight: 700; line-height: 1; }
+.metric-value { font-size: 24px; font-weight: 700; line-height: 1; }
 .metric-unit { font-size: 16px; font-weight: 700; color: var(--accent); }
 .metric-trend { font-size: 11px; margin-top: 6px; color: var(--muted); }
 .chart-section {
     background: var(--card);
     border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 25px;
+    padding: 10px;
+    margin-bottom: 16px;
 }
 .chart-header {
     display: flex;
@@ -163,26 +179,35 @@ body {
     cursor: pointer;
 }
 .chart-tabs button.active { box-shadow: 0 0 0 2px rgba(34,197,94,0.5); }
-.chart-container { position: relative; height: 220px; width: 100%; }
+.chart-container { position: relative; height: 180px;  width: 100%; }
 .timeline-section {
     background: var(--card);
     border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 20px;
+        padding: 10px;
+    margin-bottom: 16px;
 }
-.timeline-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+.timeline-title {    font-size: 14px;
+    margin-bottom: 8px; font-weight: 700; }
 .timeline-events {
     margin-top: 12px;
-    padding: 12px;
+     padding: 8px;
+    font-size: 12px;
     background: rgba(0,0,0,0.2);
-    border-radius: 14px;
-    font-size: 13px;
 }
 .timeline-event { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .timeline-empty { text-align: center; color: var(--muted); padding: 12px; }
 [data-theme="light"] .timeline-events { background: rgba(0,0,0,0.05); }
 [data-theme="light"] .timeline-event { border-bottom-color: rgba(0,0,0,0.1); }
 @media (orientation: portrait) {
+     .data-column {
+        padding: 8px 20px 20px 20px;
+    }
+    .chart-container {
+        height: 200px;
+    }
+    .greeting {
+        margin-bottom: 8px;
+    }
     .dashboard-landscape { opacity: 0; pointer-events: none; }
     .orientation-warning { display: flex; }
 }
