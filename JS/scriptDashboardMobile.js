@@ -8,7 +8,7 @@ let scene = null, camera = null, renderer = null;
 let rotationY = 0, autoRotateSpeed = 0.002;
 let currentUser = null, currentDeviceId = null;
 let modelsLoaded = false, pendingDoorState = false;
-let targetCameraZ = 24.0;
+let targetCameraZ = 18.0;
 const closedCameraZ = 12.0, openCameraZ = 17.0, cameraY = 2.2, modelYOffset = 1.4;
 
 // ID dalla URL
