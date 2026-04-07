@@ -23,12 +23,14 @@ const openCameraZ = 23.0;
 const cameraY = 2.2;
 const modelYOffset = 1.4;
 
-// Legge l'ID dalla URL
+// Legge l'ID dalla URL, se assente o non valido usa FRG-001
 const urlParams = new URLSearchParams(window.location.search);
-currentDeviceId = urlParams.get('id');
-if (!currentDeviceId) {
-  console.warn("Nessun ID frigorifero specificato, uso FRG-001");
+let idParam = urlParams.get('id');
+if (!idParam || !idParam.startsWith('FRG-')) {
+  console.warn(`ID non valido o mancante: "${idParam}". Uso FRG-001 come default.`);
   currentDeviceId = "FRG-001";
+} else {
+  currentDeviceId = idParam;
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
@@ -200,7 +202,7 @@ function addSwipeListener() {
 
 // ========== GENERAZIONE MOCK DINAMICO (SOLO FALLBACK) ==========
 function generateDynamicMock(deviceId) {
-    console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId} (API non disponibile)`);
+    console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId} (API non disponibile o 403)`);
     const now = Date.now();
     let baseTemp, baseHum;
     if (deviceId === 'FRG-TEMPLATE') {
@@ -233,7 +235,12 @@ async function fetchAndUpdate() {
             }
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        console.log(`📡 Status: ${res.status}`);
+
+        if (!res.ok) {
+            // Se la risposta non è ok (es. 403), lanciamo un errore per andare al fallback
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
 
         let data = await res.json();
         let readingsArray = Array.isArray(data) ? data : (data.data || data.readings);
@@ -243,11 +250,26 @@ async function fetchAndUpdate() {
             readingsArray = readingsArray.filter(r => r.deviceId === currentDeviceId);
         }
 
+        if (readingsArray.length === 0) {
+            console.warn(`Nessun dato per device ${currentDeviceId}, uso fallback`);
+            throw new Error("Nessun dato trovato");
+        }
+
         readingsHistory = processReadings(readingsArray);
         console.log(`✅ Dati API ricevuti: ${readingsHistory.length} letture`);
     } catch (e) {
         console.error("❌ Errore API, uso fallback dinamico:", e);
         readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
+        // Mostra un avviso visibile all'utente (opzionale)
+        const warningDiv = document.getElementById('apiWarning') || (() => {
+            const div = document.createElement('div');
+            div.id = 'apiWarning';
+            div.style.cssText = 'position:fixed; bottom:10px; left:10px; right:10px; background:#e74c3c; color:white; padding:8px; border-radius:8px; text-align:center; font-size:12px; z-index:1000;';
+            div.textContent = `⚠️ Dati dimostrativi (API non raggiungibile per ${currentDeviceId})`;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 5000);
+            return div;
+        })();
     }
     updateMetrics(readingsHistory);
     updateChart();

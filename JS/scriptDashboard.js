@@ -18,16 +18,13 @@ let currentDeviceId = null;
 let modelsReady = false;
 let pendingDoorState = false;
 
-// Legge l'ID dalla URL con validazione
+// Legge l'ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
-let idParam = urlParams.get('id');
-if (!idParam || idParam.trim() === '' || idParam === 'FRG-') {
-    console.warn("ID non valido o vuoto, uso FRG-001");
-    currentDeviceId = "FRG-001";
-} else {
-    currentDeviceId = idParam;
+currentDeviceId = urlParams.get('id');
+if (!currentDeviceId) {
+  console.warn("Nessun ID frigorifero specificato, uso FRG-001");
+  currentDeviceId = "FRG-001";
 }
-console.log("Device ID utilizzato:", currentDeviceId);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 
@@ -171,28 +168,6 @@ async function fetchAndUpdate() {
             }
         });
 
-        console.log(`📡 Status: ${res.status}`);
-
-        if (res.status === 403) {
-            console.error("❌ API Key non valida o non autorizzata. Verifica che l'ID frigorifero sia corretto.");
-            // Mostra un messaggio nell'interfaccia (opzionale)
-            const errorDiv = document.getElementById('apiErrorMsg') || (() => {
-                let div = document.createElement('div');
-                div.id = 'apiErrorMsg';
-                div.style.cssText = 'background: #ef4444; color: white; padding: 10px; border-radius: 8px; margin: 10px 0; text-align: center;';
-                document.querySelector('.DashboardContent')?.prepend(div);
-                return div;
-            })();
-            errorDiv.textContent = `⚠️ Errore di connessione: ID "${currentDeviceId}" non autorizzato. Usa un ID valido (es. FRG-001).`;
-            errorDiv.style.display = 'block';
-            // Usa fallback dinamico
-            readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
-            updateMetrics(readingsHistory);
-            updateChart();
-            updateTimeline();
-            return;
-        }
-
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         let data = await res.json();
@@ -205,9 +180,6 @@ async function fetchAndUpdate() {
 
         readingsHistory = processReadings(readingsArray);
         console.log(`✅ Dati API ricevuti: ${readingsHistory.length} letture`);
-        // Nascondi eventuale messaggio di errore
-        const errorDiv = document.getElementById('apiErrorMsg');
-        if (errorDiv) errorDiv.style.display = 'none';
     } catch (e) {
         console.error("❌ Errore API, uso fallback dinamico:", e);
         readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
