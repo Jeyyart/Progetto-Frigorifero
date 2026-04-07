@@ -8,8 +8,8 @@ let scene = null, camera = null, renderer = null;
 let rotationY = 0, autoRotateSpeed = 0.002;
 let currentUser = null, currentDeviceId = null;
 let modelsLoaded = false, pendingDoorState = false;
-let targetCameraZ = 18.0;
-const closedCameraZ = 12.0, openCameraZ = 17.0, cameraY = 2.2, modelYOffset = 1.4;
+let targetCameraZ = 24.0;
+const closedCameraZ = 18.0, openCameraZ = 23.0, cameraY = 2.2, modelYOffset = 1.4;
 
 // ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -249,12 +249,35 @@ function initAll() {
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
+
+    // Pannello admin mobile (identico a desktop)
+    if (currentUser.isAdmin) {
+        const adminPanel = document.getElementById('adminPanelMobile');
+        if (adminPanel) {
+            adminPanel.style.display = 'block';
+            const selectEl = document.getElementById('adminIdSelectMobile');
+            selectEl.innerHTML = `
+                <option value="FRG-001">FRG-001 (Principale)</option>
+                <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
+            `;
+            if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
+                selectEl.value = currentDeviceId;
+            } else {
+                selectEl.value = 'FRG-001';
+            }
+            selectEl.onchange = () => {
+                window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`;
+            };
+        }
+    }
+
     initChart();
     addTabListeners();
     addSwipeListener();
     init3D();
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
+
     let themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
