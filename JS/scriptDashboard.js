@@ -316,15 +316,24 @@ function initAll() {
 
   document.getElementById('logoutBtn').addEventListener('click', window.logout);
 
-  if (currentUser.isAdmin) {
+if (currentUser.isAdmin) {
     document.getElementById('adminPanel').style.display = 'block';
     const selectEl = document.getElementById('adminIdSelect');
-    selectEl.innerHTML = `<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>`;
-    if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
-    else selectEl.value = 'FRG-001';
-    window.switchDeviceId = function(id) { currentDeviceId = id; fetchAndUpdate(); };
-    selectEl.onchange = () => window.switchDeviceId(selectEl.value);
-  }
+    selectEl.innerHTML = `
+      <option value="FRG-001">FRG-001 (Principale)</option>
+      <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
+    `;
+    // Se l'ID corrente è tra quelli, seleziona l'opzione corrispondente
+    if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
+        selectEl.value = currentDeviceId;
+    } else {
+        selectEl.value = 'FRG-001';
+    }
+    // Al cambio, reindirizza alla stessa pagina con il nuovo ID
+    selectEl.onchange = () => {
+        window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`;
+    };
+}
 }
 
 window.logout = function() { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; };
