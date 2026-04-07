@@ -3,17 +3,19 @@ let html5QrCode = null;
 
 // Funzione per estrarre l'ID frigorifero da un testo (URL o ID diretto)
 function extractFridgeIdFromText(text) {
-    // Pattern per URL: https://progetto-frigorifero-lrcq.vercel.app/HTML/Dashboard.html?id=FRG-...
-    const urlPattern = /https:\/\/progetto-frigorifero-lrcq\.vercel\.app\/HTML\/Dashboard\.html\?id=(FRG-[A-Z0-9]+)/i;
-
+    // Pattern per URL Vercel con qualsiasi suffisso (es. progetto-frigorifero-lrcq)
+    const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard\.html\?id=(FRG-[A-Z0-9]+)/i;
     const match = text.match(urlPattern);
     if (match && match[1]) {
+        console.log(`✅ ID estratto da URL: ${match[1]}`);
         return match[1];
     }
-    // Pattern per ID diretto (inizia con FRG-)
+    // Pattern per ID diretto
     if (text && text.startsWith('FRG-')) {
+        console.log(`✅ ID diretto: ${text}`);
         return text;
     }
+    console.warn(`⚠️ Testo QR non riconosciuto: ${text}`);
     return null;
 }
 
@@ -78,6 +80,7 @@ function startScanner() {
         { facingMode: "environment" },
         config,
         (decodedText) => {
+            console.log(`📷 QR letto: ${decodedText}`);
             const fridgeId = extractFridgeIdFromText(decodedText);
             
             if (fridgeId && fridgeId.startsWith("FRG-")) {
