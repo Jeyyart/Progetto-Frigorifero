@@ -2,64 +2,47 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport ottimizzato per mobile: disabilita zoom, si adatta alla copertura del display (utile per notch/barre) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Mobile</title>
-    <!-- Foglio di stile specifico per la dashboard mobile -->
     <link rel="stylesheet" href="../CSS/styleDashboardMobile.css">
-    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Libreria Chart.js per i grafici (temperatura/umidità) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Libreria Three.js per il modello 3D del frigorifero -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <!-- Loader per i file GLTF (formato dei modelli 3D) -->
     <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- Script JavaScript principale per la dashboard mobile -->
     <script src="../JS/scriptDashboardMobile.js" defer></script>
 </head>
 <body>
-    <!-- Contenitore principale della dashboard mobile -->
     <div class="mobile-dashboard">
-        <!-- Avviso per orientamento verticale: appare solo se il telefono è in verticale (portrait) -->
+        <!-- Avviso per orientamento verticale (copre tutto) -->
         <div id="orientationWarning" class="orientation-warning">
             ⚠️ Ruota il telefono in orizzontale per usare la dashboard
         </div>
 
-        <!-- Layout pensato per l'orientamento orizzontale (landscape) -->
+        <!-- Layout pensato SOLO per l'orientamento orizzontale -->
         <div class="dashboard-landscape">
-            <!-- Colonna sinistra: modello 3D del frigorifero -->
+            <!-- Colonna sinistra: modello 3D -->
             <div class="model-column">
-                <!-- Canvas dove Three.js disegnerà il modello 3D -->
                 <canvas id="three-canvas"></canvas>
-                <!-- Suggerimento interattivo per l'utente -->
                 <div class="model-hint">🖱️ Trascina per ruotare</div>
             </div>
 
-            <!-- Colonna destra: dati, grafico e timeline (scrollabile) -->
+            <!-- Colonna destra: dati, grafico, timeline -->
             <div class="data-column">
-                <!-- HEADER MOBILE: logo, pulsante tema, logout, nome utente -->
                 <div class="header-mobile">
                     <div class="logo-mobile">
                         <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
                         <h1>NEXORA</h1>
                     </div>
                     <div class="header-actions">
-                        <!-- Pulsante per cambiare tema (scuro/chiaro) -->
                         <button id="themeToggleBtn" class="theme-toggle">☀️</button>
-                        <!-- Pulsante logout -->
                         <button id="logoutBtn" class="logout-btn">ESCI</button>
-                        <!-- Badge con nome utente -->
                         <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
                     </div>
                 </div>
 
-                <!-- Messaggio di benvenuto personalizzato -->
                 <p class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
 
-                <!-- GRIGLIA DELLE METRICHE: temperatura, umidità, stato porta (3 colonne su mobile) -->
                 <div class="metrics-grid">
                     <div class="metric-card">
                         <div class="metric-label">TEMPERATURA</div>
@@ -76,23 +59,19 @@
                     </div>
                 </div>
 
-                <!-- SEZIONE GRAFICO: mostra storico temperatura o umidità -->
                 <div class="chart-section">
                     <div class="chart-header">
                         <div class="chart-title" id="chartTitle">Storico Temperatura</div>
                         <div class="chart-tabs">
-                            <!-- Pulsanti per cambiare tipo di grafico -->
                             <button class="chart-tab active" data-type="temperature">Temperatura</button>
                             <button class="chart-tab" data-type="humidity">Umidità</button>
                         </div>
                     </div>
                     <div class="chart-container" id="chartSwipeArea">
-                        <!-- Canvas dove Chart.js disegnerà il grafico -->
                         <canvas id="dataChart"></canvas>
                     </div>
                 </div>
 
-                <!-- SEZIONE TIMELINE: elenco delle aperture della porta oggi -->
                 <div class="timeline-section">
                     <div class="timeline-title">Timeline Aperture Porta - Oggi</div>
                     <div id="timelineEvents" class="timeline-events"></div>
