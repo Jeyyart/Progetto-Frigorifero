@@ -25,6 +25,7 @@ const registroToggleText = document.getElementById('registroToggleText');
 const nicknameGroup = document.getElementById('nicknameGroup');
 const emailGroup = document.getElementById('emailGroup');
 const loginIdentifierGroup = document.getElementById('loginIdentifierGroup');
+let successTimeout = null;
 
 // ========== FUNZIONI PER LA GESTIONE DEGLI ERRORI ==========
 // Mostra un messaggio di errore rosso nel div dedicato
@@ -114,10 +115,37 @@ registroButton.addEventListener('click', () => {
             return;
         }
 
+        
+
+        function resetMessageStyle() {
+            const errorEl = document.getElementById('errorContainer');
+            errorEl.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+            errorEl.style.borderColor = '#ef4444';
+            errorEl.style.color = '#ef4444';
+        }
+
+        function showSuccess(message) {
+            if (successTimeout) clearTimeout(successTimeout);
+            const errorEl = document.getElementById('errorContainer');
+            errorEl.style.backgroundColor = 'rgba(34, 197, 94, 0.15)';
+            errorEl.style.borderColor = '#22c55e';
+            errorEl.style.color = '#22c55e';
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            successTimeout = setTimeout(() => {
+                if (errorEl.style.display === 'block') errorEl.style.display = 'none';
+                resetMessageStyle();
+            }, 4000);
+        }
+
         // Salva il nuovo utente
         usersDB.push({ email, nickname, password });
         localStorage.setItem('nexoraUsers', JSON.stringify(usersDB));
-        alert('✅ Account creato con successo!');
+        showSuccess('✅ Account creato con successo!');
+        setTimeout(() => {
+            registroToggleLink.click();
+        }, 2000);
+        return;
         // Torna automaticamente alla schermata di login
         registroToggleLink.click();
         return;
