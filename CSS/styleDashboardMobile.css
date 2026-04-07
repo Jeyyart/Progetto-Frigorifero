@@ -1,11 +1,13 @@
-/* VARIABILI CSS tema */
+/* VARIABILI CSS per il tema scuro (impostazione predefinita) */
 :root {
-    --bg: #0f0f0f;
-    --card: #1a1a1a;
-    --accent: #22c55e;
-    --text: #f0f0f0;
-    --muted: #aaaaaa;
+    --bg: #0f0f0f;          /* sfondo principale */
+    --card: #1a1a1a;        /* sfondo delle card (metriche, grafico, timeline) */
+    --accent: #22c55e;      /* verde per accenti e pulsanti */
+    --text: #f0f0f0;        /* colore del testo principale */
+    --muted: #aaaaaa;       /* colore per testi secondari */
 }
+
+/* VARIABILI per il tema chiaro: sovrascritte quando data-theme="light" sull'elemento <html> */
 [data-theme="light"] {
     --bg: #f8fafc;
     --card: #ffffff;
@@ -13,24 +15,32 @@
     --text: #111827;
     --muted: #64748b;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
 
+/* Reset CSS: toglie margini e padding predefiniti, e usa il box-sizing border-box */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Stile base del body: font, sfondo dinamico, occupa tutta la finestra, nasconde lo scroll esterno */
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
     width: 100vw;
-    overflow: hidden;
+    overflow: hidden;        /* evita doppio scroll, perché il contenuto destro scrolla indipendentemente */
 }
 
+/* Contenitore principale della dashboard mobile */
 .mobile-dashboard {
     height: 100%;
     width: 100%;
     position: relative;
 }
 
-/* AVVISO ORIENTAMENTO VERTICALE */
+/* AVVISO PER ORIENTAMENTO VERTICALE (portrait) */
 .orientation-warning {
     position: fixed;
     top: 0;
@@ -47,10 +57,10 @@ body {
     text-align: center;
     z-index: 1000;
     backdrop-filter: blur(5px);
-    display: none; /* inizialmente nascosto */
+    display: none;           /* inizialmente nascosto, verrà mostrato solo in modalità portrait */
 }
 
-/* LAYOUT SOLO PER ORIENTAMENTO ORIZZONTALE */
+/* LAYOUT PER ORIENTAMENTO ORIZZONTALE (landscape) */
 .dashboard-landscape {
     display: flex;
     height: 100%;
@@ -59,24 +69,28 @@ body {
     transition: opacity 0.3s;
 }
 
-/* COLONNA SINISTRA: modello 3D (40% larghezza) */
+/* COLONNA SINISTRA: modello 3D (occupa metà larghezza) */
 .model-column {
-    flex: 0 0 40%;
+    flex: 1;
     background: #111;
     position: relative;
-    min-width: 0;
+    min-width: 0;            /* evita overflow in flex */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 [data-theme="light"] .model-column {
-    background: #e2e8f0;
+    background: #e2e8f0;    /* sfondo chiaro per tema light */
 }
+
+/* Canvas per il modello 3D: riempie completamente la colonna */
 #three-canvas {
     width: 100%;
     height: 100%;
     display: block;
 }
+
+/* Suggerimento in basso sul modello (trascina per ruotare) */
 .model-hint {
     position: absolute;
     bottom: 15px;
@@ -88,19 +102,19 @@ body {
     border-radius: 20px;
     font-size: 12px;
     white-space: nowrap;
-    pointer-events: none;
+    pointer-events: none;    /* il testo non interferisce con il trascinamento */
 }
 
-/* COLONNA DESTRA: dati (scrollabile) */
+/* COLONNA DESTRA: dati, grafico, timeline (scrollabile) */
 .data-column {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto;        /* permette lo scroll verticale */
     padding: 20px 20px 30px 20px;
     background: var(--bg);
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch;  /* scroll fluido su iOS */
 }
 
-/* HEADER MOBILE compatto */
+/* HEADER MOBILE (compatto) */
 .header-mobile {
     display: flex;
     justify-content: space-between;
@@ -109,6 +123,7 @@ body {
     flex-wrap: wrap;
     gap: 10px;
 }
+
 .logo-mobile {
     display: flex;
     align-items: center;
@@ -122,12 +137,16 @@ body {
     font-size: 20px;
     font-weight: 700;
     color: var(--accent);
+    margin: 0;
 }
+
 .header-actions {
     display: flex;
     align-items: center;
     gap: 8px;
 }
+
+/* Pulsante cambio tema */
 .theme-toggle {
     background: #1a1a1a;
     border: 2px solid #444;
@@ -136,6 +155,9 @@ body {
     height: 44px;
     border-radius: 12px;
     font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
 }
 [data-theme="light"] .theme-toggle {
@@ -143,6 +165,8 @@ body {
     border-color: #cbd5e1;
     color: #111;
 }
+
+/* Pulsante logout (rosso) */
 .logout-btn {
     background: #e74c3c;
     color: white;
@@ -153,6 +177,8 @@ body {
     font-size: 14px;
     cursor: pointer;
 }
+
+/* Badge nome utente (verde) */
 .user-display {
     background: #22c55e;
     color: #111;
@@ -164,19 +190,24 @@ body {
     align-items: center;
     gap: 6px;
 }
+
+/* Messaggio di benvenuto */
 .greeting {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 20px;
+    color: var(--text);
 }
 
-/* GRIGLIA METRICHE (3 colonne) */
+/* GRIGLIA DELLE METRICHE (3 colonne su mobile) */
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 25px;
 }
+
+/* Singola card metrica */
 .metric-card {
     background: var(--card);
     border-radius: 16px;
@@ -206,7 +237,7 @@ body {
     color: var(--muted);
 }
 
-/* GRAFICO */
+/* SEZIONE GRAFICO */
 .chart-section {
     background: var(--card);
     border-radius: 16px;
@@ -244,7 +275,7 @@ body {
     width: 100%;
 }
 
-/* TIMELINE */
+/* SEZIONE TIMELINE (aperture porta) */
 .timeline-section {
     background: var(--card);
     border-radius: 16px;
@@ -267,6 +298,9 @@ body {
     padding: 8px 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
+.timeline-event:last-child {
+    border-bottom: none;
+}
 .timeline-empty {
     text-align: center;
     color: var(--muted);
@@ -279,7 +313,34 @@ body {
     border-bottom-color: rgba(0,0,0,0.1);
 }
 
-/* REGOLA CRITICA: se il telefono è in verticale (portrait), nasconde la dashboard e mostra l'avviso */
+.admin-select {
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid #444;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 15px;
+}
+.admin-select:hover {
+    border-color: var(--accent);
+}
+.admin-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+}
+[data-theme="light"] .admin-select {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #111827;
+}
+
+
+/* REGOLA CRITICA: se il telefono è in orientamento verticale (portrait), nasconde la dashboard e mostra l'avviso */
 @media (orientation: portrait) {
     .dashboard-landscape {
         opacity: 0;
