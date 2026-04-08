@@ -1,9 +1,9 @@
-// scriptScanTelefono.js - con verifica associazione tramite email (case‑insensitive)
+// scriptScanTelefono.js - con verifica associazione tramite proxy
 
 let html5QrCode = null;
 let currentScannedFridgeId = null;
 
-const API_VERIFICA_ASSOCIAZIONE = "https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php";
+const API_VERIFICA_ASSOCIAZIONE = "/api/verifica";  // Proxy locale
 
 function extractFridgeIdFromText(text) {
     const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard(?:Mobile)?\.html\?id=(FRG-[A-Z0-9]+)/i;
@@ -72,10 +72,13 @@ async function verificaUtenteEAutorizza(fridgeId) {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-        // Richiesta GET per evitare preflight CORS
-        const url = `${API_VERIFICA_ASSOCIAZIONE}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
-        const response = await fetch(url, {
-            method: "GET",
+        const response = await fetch(API_VERIFICA_ASSOCIAZIONE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: currentUser.email,
+                fridgeId: fridgeId
+            }),
             signal: controller.signal
         });
         clearTimeout(timeoutId);

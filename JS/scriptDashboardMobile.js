@@ -1,5 +1,14 @@
 console.log('✅ scriptDashboardMobile.js caricato - con verifica autorizzazione');
 
+const response = await fetch("/api/verifica", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ 
+        userId: user.email, 
+        fridgeId: currentDeviceId 
+    })
+});
+
 let chart = null;
 let currentChartType = 'temperature';
 let readingsHistory = [];
@@ -35,8 +44,14 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const url = `https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch("/api/verifica", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                userId: user.email, 
+                fridgeId: currentDeviceId 
+            })
+        });
         const data = await response.json();
         
         if (data.authorized === true) return true;
