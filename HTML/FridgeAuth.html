@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Autorizzazione NEXORA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Accesso NEXORA</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -58,11 +58,7 @@
         <div id="actionButton"></div>
     </div>
     <script>
-        // ---------- CONFIGURAZIONE ----------
-        // 👇 SOSTITUISCI CON LA TUA API DI VERIFICA ASSOCIAZIONE UTENTE-FRIGO
-        const API_VERIFICA_ASSOCIAZIONE = "https://tuo-backend.railway.app/api/verificaAssociazione";
-        // ------------------------------------
-
+        const PROXY_URL = '/api/verifica';
         const urlParams = new URLSearchParams(window.location.search);
         const fridgeId = urlParams.get('id');
 
@@ -70,50 +66,45 @@
             mostraMessaggio("ID frigorifero non valido", "error");
             document.getElementById('actionButton').innerHTML = '<button onclick="window.location.href=\'SelezioneDispositivo.html\'">Torna alla selezione</button>';
         } else {
-            // Salva l'ID richiesto per usarlo dopo il login
-            localStorage.setItem('pendingFridgeId', fridgeId);
-            verificaUtenteEAutorizzazione(fridgeId);
+            avviaVerifica(fridgeId);
         }
 
-        async function verificaUtenteEAutorizzazione(fridgeId) {
+        async function avviaVerifica(fridgeId) {
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
+            
             // Caso 1: utente non loggato
             if (!currentUser) {
-                mostraMessaggio("Devi accedere per visualizzare questo frigorifero", "loading");
-                // Reindirizza al login, ma con un parametro di ritorno
-                localStorage.setItem('redirectAfterLogin', window.location.href);
+                // Salva l'ID e l'URL di ritorno, poi vai al login
+                localStorage.setItem('pendingFridgeId', fridgeId);
+                localStorage.setItem('redirectAfterAuth', window.location.href);
                 window.location.href = '../HTML/registro.html';
                 return;
             }
 
-            // Caso 2: utente loggato – verifica autorizzazione
-            mostraMessaggio("Controllo autorizzazione in corso...", "loading");
+            // Caso 2: admin (bypass)
+            if (currentUser.isAdmin === true) {
+                window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
+                return;
+            }
 
+            // Caso 3: utente normale – verifica autorizzazione
+            mostraMessaggio("Verifica in corso...", "loading");
             try {
-                // Chiamata API per verificare se l'utente (nickname o email) ha accesso a questo fridgeId
-                const response = await fetch(API_VERIFICA_ASSOCIAZIONE, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        userId: currentUser.nickname,   // oppure currentUser.email
-                        fridgeId: fridgeId
-                    })
-                });
-
+                const url = `${PROXY_URL}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+                const response = await fetch(url, { method: 'GET' });
                 const data = await response.json();
-
+                
                 if (data.authorized === true) {
-                    // Autorizzato: vai alla dashboard
+                    // Autorizzato → dashboard
                     window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
                 } else {
-                    // Non autorizzato
-                    mostraMessaggio("❌ Il tuo account non ha accesso a questo frigorifero", "error");
+                    const errore = data.error || "Non autorizzato";
+                    mostraMessaggio(`❌ ${errore}`, "error");
                     document.getElementById('actionButton').innerHTML = '<button onclick="window.location.href=\'SelezioneDispositivo.html\'">Scegli un altro dispositivo</button>';
                 }
             } catch (err) {
                 console.error(err);
-                mostraMessaggio("Errore di verifica. Riprova più tardi.", "error");
+                mostraMessaggio("❌ Errore di connessione al server. Riprova più tardi.", "error");
                 document.getElementById('actionButton').innerHTML = '<button onclick="location.reload()">Riprova</button>';
             }
         }

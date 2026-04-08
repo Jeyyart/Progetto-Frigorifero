@@ -132,10 +132,10 @@ async function loginUser(identifier, password) {
 
 // ========== REINDIRIZZAMENTO POST-LOGIN ==========
 function redirectAfterLogin() {
-    const redirectAfterScan = localStorage.getItem('redirectAfterScan');
-    if (redirectAfterScan) {
-        localStorage.removeItem('redirectAfterScan');
-        window.location.href = redirectAfterScan;
+    const redirectAfterAuth = localStorage.getItem('redirectAfterAuth');
+    if (redirectAfterAuth) {
+        localStorage.removeItem('redirectAfterAuth');
+        window.location.href = redirectAfterAuth;
     } else {
         window.location.href = '../HTML/SelezioneDispositivo.html';
     }
@@ -188,8 +188,8 @@ if (identifier === '#admin' && password === 'admin123') {
 }
 
     const result = await loginUser(identifier, password);
-   if (result.success) {
-    localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: result.isAdmin }));
+if (result.success) {
+    localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: false }));
     redirectAfterLogin();
 }else {
         showError(result.message || '❌ Credenziali errate');

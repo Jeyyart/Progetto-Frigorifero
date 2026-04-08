@@ -25,31 +25,32 @@ const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetai
 const PROXY_URL = '/api/verifica';
 
 // ========== VERIFICA AUTORIZZAZIONE ==========
-async function checkAuthorization() {
+async function checkAuthorizationAndRedirect() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
+    const fridgeId = currentDeviceId;
+
+    // Se non loggato, reindirizza a FridgeAuth (che gestirà login)
     if (!user) {
-        // Non loggato: salva l'ID e l'URL corrente, poi vai al login
-        localStorage.setItem('pendingFridgeId', currentDeviceId);
-        localStorage.setItem('redirectAfterScan', window.location.href);
-        window.location.href = '../HTML/registro.html';
+        window.location.href = `../HTML/FridgeAuth.html?id=${fridgeId}`;
         return false;
     }
+
+    // Admin bypassa verifica
     if (user.isAdmin) return true;
 
     try {
-        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
         const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
-        console.log("Risposta autorizzazione mobile:", data);
         if (data.authorized === true) return true;
-        
-        alert("❌ Il tuo account non è autorizzato per questo frigorifero.");
-        window.location.href = '../HTML/SelezioneDispositivo.html';
+
+        // Non autorizzato → reindirizza a FridgeAuth (mostrerà errore)
+        window.location.href = `../HTML/FridgeAuth.html?id=${fridgeId}`;
         return false;
     } catch (err) {
         console.error("Errore verifica:", err);
-        alert("Errore di connessione al server. Riprova più tardi.");
-        window.location.href = '../HTML/SelezioneDispositivo.html';
+        // In caso di errore di rete, reindirizza comunque a FridgeAuth per tentare di nuovo
+        window.location.href = `../HTML/FridgeAuth.html?id=${fridgeId}`;
         return false;
     }
 }
@@ -273,8 +274,8 @@ function addSwipeListener() {
 }
 
 async function initAll() {
-    const authorized = await checkAuthorization();
-    if (!authorized) return;
+    const authorized = await checkAuthorizationAndRedirect();
+    if (!authorized) return; // se false, il redirect è già avvenuto
 
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if(!currentUser) { window.location.href = '../HTML/registro.html'; return; }
