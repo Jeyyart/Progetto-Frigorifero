@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - verifica GET');
+console.log('✅ scriptDashboard.js CARICATO (senza verifica)');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -11,10 +11,7 @@ let modelsReady = false, pendingDoorState = false;
 
 const urlParams = new URLSearchParams(window.location.search);
 currentDeviceId = urlParams.get('id');
-if (!currentDeviceId) {
-  console.warn("Nessun ID frigorifero, uso FRG-001");
-  currentDeviceId = "FRG-001";
-}
+if (!currentDeviceId) currentDeviceId = "FRG-001";
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
@@ -275,13 +272,13 @@ function addSwipeListener() {
 }
 
 async function initAll() {
-        const authorized = await checkAuthorization();
-    if (!authorized) return;
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
     const name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
+
     initChart();
     addTabListeners();
     addSwipeListener();
@@ -289,6 +286,7 @@ async function initAll() {
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
+    // Tema e logout
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -299,21 +297,16 @@ async function initAll() {
         document.documentElement.setAttribute('data-theme', theme);
         themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
     });
-
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('currentUser');
         window.location.href = '../HTML/registro.html';
     });
-
     if (currentUser.isAdmin) {
         document.getElementById('adminPanel').style.display = 'block';
         const selectEl = document.getElementById('adminIdSelect');
-        selectEl.innerHTML = '<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>';
-        if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
-        else selectEl.value = 'FRG-001';
+        selectEl.innerHTML = '<option value="FRG-001">FRG-001</option><option value="FRG-TEMPLATE">FRG-TEMPLATE</option>';
+        selectEl.value = currentDeviceId;
         selectEl.onchange = () => { window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`; };
     }
 }
-
-window.logout = function() { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; };
 window.onload = initAll;
