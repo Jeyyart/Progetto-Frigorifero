@@ -1,26 +1,37 @@
 export default async function handler(req, res) {
+  // Imposta CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
-  const { userId, fridgeId } = req.query;
-  if (!userId || !fridgeId) {
-    return res.status(400).json({ error: 'Missing userId or fridgeId' });
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
-  const backendUrl = `https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php?userId=${encodeURIComponent(userId)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+
+  const { userId, fridgeId } = req.body;
+  if (!userId || !fridgeId) {
+    res.status(400).json({ error: 'Missing userId or fridgeId' });
+    return;
+  }
+
+  const targetUrl = 'https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php';
+
   try {
-    const response = await fetch(backendUrl);
-    const text = await response.text();
-    try {
-      const data = JSON.parse(text);
-      return res.status(response.status).json(data);
-    } catch (e) {
-      console.error('Backend non-JSON:', text.substring(0,200));
-      return res.status(502).json({ authorized: false, error: 'Invalid backend response' });
-    }
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, fridgeId })
+    });
+    const data = await response.json();
+    res.status(response.status).json(data);
   } catch (err) {
-    return res.status(500).json({ authorized: false, error: err.message });
+    console.error('Proxy error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }

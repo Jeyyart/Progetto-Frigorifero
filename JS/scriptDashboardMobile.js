@@ -1,4 +1,5 @@
-console.log('✅ scriptDashboardMobile.js - verifica tramite proxy');
+console.log('✅ scriptDashboardMobile.js caricato - con verifica GET diretta');
+
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -11,39 +12,43 @@ let modelsLoaded = false, pendingDoorState = false;
 let targetCameraZ = 24.0;
 const closedCameraZ = 18.0, openCameraZ = 23.0, cameraY = 2.2, modelYOffset = 1.4;
 
+// ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
 let idParam = urlParams.get('id');
 if (!idParam || !idParam.startsWith('FRG-')) {
+    console.warn(`ID non valido: "${idParam}", uso FRG-001`);
     currentDeviceId = "FRG-001";
 } else {
     currentDeviceId = idParam;
 }
+console.log(`Device ID: ${currentDeviceId}`);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const PROXY_URL = '/api/verifica';
+const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
 
-// ========== VERIFICA AUTORIZZAZIONE (tramite proxy) ==========
+
+// ========== VERIFICA AUTORIZZAZIONE (POST al proxy) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
-        localStorage.setItem('redirectAfterLogin', window.location.href);
         window.location.href = '../HTML/registro.html';
         return false;
     }
     if (user.isAdmin) return true;
 
     try {
-        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url);
         const data = await response.json();
-        console.log("Risposta autorizzazione mobile:", data);
+        console.log("Risposta verifica mobile:", data);
         if (data.authorized === true) return true;
         
-        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        let errore = data.error || "Non autorizzato";
+        alert(`❌ ${errore}\n\nUtente: ${user.email}\nFrigo: ${currentDeviceId}`);
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
-        console.error("Errore verifica:", err);
+        console.error("Errore verifica mobile:", err);
         alert("Errore di connessione al server. Riprova più tardi.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
@@ -58,13 +63,14 @@ function showUserError(msg) {
         setTimeout(() => { if (statusDiv) statusDiv.innerHTML = ''; }, 5000);
     }
 }
+
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }
 
 function processReadings(readings) {
     return readings.map(r => {
         let date = parseTimestamp(r.timestame || r.timestamp);
-        date = new Date(date.getTime() + 7200000);
+        date = new Date(date.getTime() + 7200000); // +2 ore
         return {
             timestamp: date,
             temperature: r.temperatura || r.temperature,
@@ -106,6 +112,7 @@ function getTodayEvents(readings) {
                   .map(ev => ({ time: ev.timestamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), action: ev.changedTo }));
 }
 
+// ========== AGGIORNAMENTO UI ==========
 function updateMetrics(readings) {
     if (!readings.length) return;
     let latest = readings[readings.length-1];
@@ -140,6 +147,7 @@ function updateTimeline() {
     container.innerHTML = `<div class="timeline-events-list">${events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('')}</div>`;
 }
 
+// ========== MOCK DINAMICO (FALLBACK) ==========
 function generateDynamicMock(deviceId) {
     console.warn(`⚠️ Fallback dinamico per ${deviceId}`);
     let now = Date.now();
@@ -224,6 +232,7 @@ function init3D() {
     setTimeout(() => { if(!modelsLoaded) { console.warn('Modelli 3D non caricati, uso chiuso'); modelsLoaded=true; switchModel(pendingDoorState); updateCameraZoom(pendingDoorState); } }, 5000);
 }
 
+// ========== GRAFICO ==========
 function initChart() {
     let ctx = document.getElementById('dataChart').getContext('2d');
     chart = new Chart(ctx, {
@@ -268,27 +277,36 @@ function addSwipeListener() {
     });
 }
 
+// ========== INIZIALIZZAZIONE ==========
 async function initAll() {
     const authorized = await checkAuthorization();
     if (!authorized) return;
 
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
+    if(!currentUser) { window.location.href = '../HTML/registro.html'; return; }
     let name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-    // Admin panel mobile (opzionale)
+    // Pannello admin mobile
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {
             adminPanel.style.display = 'block';
             const selectEl = document.getElementById('adminIdSelectMobile');
-            selectEl.innerHTML = `<option value="FRG-001">FRG-001</option><option value="FRG-TEMPLATE">FRG-TEMPLATE</option>`;
-            if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
-            else selectEl.value = 'FRG-001';
-            selectEl.onchange = () => { window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`; };
+            selectEl.innerHTML = `
+                <option value="FRG-001">FRG-001 (Principale)</option>
+                <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
+            `;
+            if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
+                selectEl.value = currentDeviceId;
+            } else {
+                selectEl.value = 'FRG-001';
+            }
+            selectEl.onchange = () => {
+                window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`;
+            };
         }
     }
 

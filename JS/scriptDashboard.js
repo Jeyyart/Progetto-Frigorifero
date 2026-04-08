@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - versione originale');
+console.log('✅ scriptDashboard.js CARICATO - con verifica GET diretta');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -17,9 +17,9 @@ if (!currentDeviceId) {
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const PROXY_URL = '/api/verifica';
+const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
 
-// ========== VERIFICA AUTORIZZAZIONE (chiamata diretta) ==========
+// ========== VERIFICA AUTORIZZAZIONE (GET diretta) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -29,13 +29,14 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url);
         const data = await response.json();
-        console.log("Risposta autorizzazione desktop:", data);
+        console.log("Risposta verifica:", data);
         if (data.authorized === true) return true;
         
-        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        let errore = data.error || "Non autorizzato";
+        alert(`❌ ${errore}\n\nUtente: ${user.email}\nFrigo: ${currentDeviceId}`);
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
@@ -45,7 +46,8 @@ async function checkAuthorization() {
         return false;
     }
 }
-// ========== TUTTE LE FUNZIONI ORIGINALI (invariate) ==========
+
+// ========== TUTTE LE ALTRE FUNZIONI (invariate) ==========
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }
 
