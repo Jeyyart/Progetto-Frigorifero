@@ -4,68 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXORA Smart Fridge - Accedi</title>
-    <!-- Foglio di stile esterno per il design della pagina -->
     <link rel="stylesheet" href="../CSS/styleRegistro.css">
-    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Script JavaScript (gestisce login, registrazione, tema, errori) -->
     <script src="../JS/scriptRegistro.js" defer></script>
 </head>
 <body>
-    <!-- LOGO GLOBALE: sempre visibile in alto a sinistra -->
     <div class="global-logo">
         <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
         <h1>NEXORA Smart Fridge</h1>
     </div>
-
-    <!-- PULSANTE PER CAMBIARE TEMA (scuro/chiaro) - sempre visibile in alto a destra -->
     <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
-
-    <!-- CARD CENTRALE: contiene il modulo di login/registrazione -->
     <div class="containerRegistro">
         <div class="registroHeader">
-            <!-- Titolo dinamico: cambia testo tra "Accedi" e "Registrati" -->
             <h2 id="registroSubtitle">Accedi al tuo sistema di monitoraggio</h2>
         </div>
-
-        <!-- CONTENITORE PER I MESSAGGI DI ERRORE (es. credenziali errate, password debole) -->
         <div id="errorContainer" class="error-message" style="display:none;"></div>
-
         <div class="registroForm">
-            <!-- Campo LOGIN: email o nickname (visibile solo in modalità login) -->
             <div class="RegistroForm" id="loginIdentifierGroup">
                 <label for="identifier">Email o Nickname</label>
                 <input type="text" id="identifier" placeholder="Esempio@email.com o Nickname" required>
             </div>
-
-            <!-- Campo NICKNAME (visibile solo in registrazione) -->
             <div class="RegistroForm" id="nicknameGroup" style="display:none;">
                 <label for="nickname">Nickname</label>
                 <input type="text" id="nickname" placeholder="Il tuo nome">
             </div>
-            <!-- Campo EMAIL (visibile solo in registrazione) -->
             <div class="RegistroForm" id="emailGroup" style="display:none;">
                 <label for="email">Email</label>
                 <input type="text" id="email" placeholder="tua@email.com">
             </div>
-
-            <!-- Campo PASSWORD (sempre visibile) -->
             <div class="RegistroForm">
                 <label for="password">Password</label>
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
-            <!-- Campo CONFERMA PASSWORD (visibile solo in registrazione) -->
             <div class="RegistroForm" id="registroConfirmPasswordGroup" style="display:none;">
                 <label for="confirmPassword">Conferma Password</label>
                 <input type="password" id="confirmPassword" placeholder="••••••••">
             </div>
-
-            <!-- BOTTONE PRINCIPALE: cambia testo tra "Accedi" e "Registrati" -->
             <button id="registroButton" class="registroButton">Accedi</button>
-
-            <!-- LINK PER PASSARE DA LOGIN A REGISTRAZIONE E VICEVERSA -->
             <div class="registroToggle">
                 <span id="registroToggleText">Non hai un account? </span>
                 <a id="registroToggleLink">Registrati</a>

@@ -1,39 +1,35 @@
+<?php
+require_once '../PHP/config.php';
+if (!isset($_SESSION['user'])) {
+    header('Location: registro.php');
+    exit;
+}
+$currentUser = $_SESSION['user'];
+?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport standard: garantisce scalabilità su tutti i dispositivi -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXORA Smart Fridge Dashboard</title>
-    <!-- Foglio di stile per la dashboard (layout a due colonne: modello 3D + metriche/grafico) -->
     <link rel="stylesheet" href="../CSS/styleDashboard.css">
-    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Libreria Chart.js per i grafici (temperatura/umidità) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Libreria Three.js per il modello 3D del frigorifero -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <!-- Loader per i file GLTF (formato dei modelli 3D) -->
     <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- Script JavaScript principale per la dashboard -->
+    <script>
+        const currentUser = <?php echo json_encode($currentUser); ?>;
+    </script>
     <script src="../JS/scriptDashboard.js" defer></script>
 </head>
 <body>
-    <!-- Contenitore principale: divide la schermata in due aree (modello 3D a sinistra, contenuti a destra) -->
     <div class="containerSito">
-        <!-- AREA SINISTRA: visualizzazione 3D del frigorifero -->
         <div class="modello3D">
-            <!-- Canvas dove Three.js disegnerà il modello 3D -->
             <canvas id="three-canvas"></canvas>
-            <!-- Suggerimento interattivo per l'utente -->
             <div class="model-hint">🖱️ Trascina per ruotare • Gira automaticamente</div>
         </div>
-
-        <!-- AREA DESTRA: metriche, grafico, timeline -->
         <div class="DashboardContent">
-            <!-- HEADER: logo, pulsante tema, logout, nome utente, stato connessione -->
             <div class="header">
                 <div class="header-left">
                     <div class="logo-placeholder">
@@ -42,30 +38,19 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <!-- Pulsante per cambiare tema (scuro/chiaro) -->
                     <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
-                    <!-- Pulsante logout -->
                     <button id="logoutBtn" class="logout-btn">ESCI</button>
-                    <!-- Badge con nome utente -->
                     <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
-                    <!-- Indicatore di connessione (sempre "Connesso" in questa versione) -->
                 </div>
             </div>
-
-            <!-- Messaggio di benvenuto personalizzato -->
             <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
-
-            <!-- PANNELLO ADMIN (inizialmente nascosto) - visibile solo se l'utente è admin -->
             <div id="adminPanel" class="admin-panel" style="display:none;margin-bottom:20px;">
                 <label>🔑 Modalità Admin – Seleziona ID Frigorifero</label>
                 <select id="adminIdSelect" onchange="switchDeviceId(this.value)" class="admin-select">
-                    <option value="FRG-987654">FRG-987654 (Principale)</option>
-                    <option value="FRG-111222">FRG-111222 (Cucina 2)</option>
-                    <option value="FRG-333444">FRG-333444 (Garage)</option>
+                    <option value="FRG-001">FRG-001 (Principale)</option>
+                    <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
                 </select>
             </div>
-
-            <!-- GRIGLIA DELLE METRICHE: temperatura, umidità, stato porta -->
             <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="metric-label">TEMPERATURA</div>
@@ -83,24 +68,18 @@
                     <div class="metric-trend" id="doorTime"></div>
                 </div>
             </div>
-
-            <!-- SEZIONE GRAFICO: mostra storico temperatura o umidità -->
             <div class="chart-section">
                 <div class="chart-header">
                     <div class="chart-title" id="chartTitle">Storico Temperatura</div>
                     <div class="chart-tabs">
-                        <!-- Pulsanti per cambiare tipo di grafico -->
                         <button class="chart-tab active" data-type="temperature">Temperatura</button>
                         <button class="chart-tab" data-type="humidity">Umidità</button>
                     </div>
                 </div>
                 <div class="chart-container" id="chartSwipeArea">
-                    <!-- Canvas dove Chart.js disegnerà il grafico -->
                     <canvas id="dataChart"></canvas>
                 </div>
             </div>
-
-            <!-- SEZIONE TIMELINE: elenco delle aperture della porta oggi -->
             <div class="timeline-section">
                 <div class="timeline-title">Timeline Aperture Porta - Oggi</div>
                 <div id="timelineEvents" class="timeline-events"></div>
