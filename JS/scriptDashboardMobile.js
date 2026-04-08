@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboardMobile.js caricato - con verifica GET diretta');
+console.log('✅ scriptDashboardMobile.js caricato - verifica autorizzazione');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -11,7 +11,6 @@ let modelsLoaded = false, pendingDoorState = false;
 let targetCameraZ = 24.0;
 const closedCameraZ = 18.0, openCameraZ = 23.0, cameraY = 2.2, modelYOffset = 1.4;
 
-// ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
 let idParam = urlParams.get('id');
 if (!idParam || !idParam.startsWith('FRG-')) {
@@ -25,10 +24,13 @@ console.log(`Device ID: ${currentDeviceId}`);
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE (POST al proxy) ==========
+// ========== VERIFICA AUTORIZZAZIONE ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
+        // Non loggato: salva l'ID e l'URL corrente, poi vai al login
+        localStorage.setItem('pendingFridgeId', currentDeviceId);
+        localStorage.setItem('redirectAfterScan', window.location.href);
         window.location.href = '../HTML/registro.html';
         return false;
     }
@@ -40,7 +42,8 @@ async function checkAuthorization() {
         const data = await response.json();
         console.log("Risposta autorizzazione mobile:", data);
         if (data.authorized === true) return true;
-        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        
+        alert("❌ Il tuo account non è autorizzato per questo frigorifero.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
@@ -50,6 +53,7 @@ async function checkAuthorization() {
         return false;
     }
 }
+
 // ========== UTILITÀ ==========
 function showUserError(msg) {
     const statusDiv = document.getElementById('apiStatus');
@@ -58,14 +62,13 @@ function showUserError(msg) {
         setTimeout(() => { if (statusDiv) statusDiv.innerHTML = ''; }, 5000);
     }
 }
-
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }
 
 function processReadings(readings) {
     return readings.map(r => {
         let date = parseTimestamp(r.timestame || r.timestamp);
-        date = new Date(date.getTime() + 7200000); // +2 ore
+        date = new Date(date.getTime() + 7200000);
         return {
             timestamp: date,
             temperature: r.temperatura || r.temperature,
@@ -107,7 +110,6 @@ function getTodayEvents(readings) {
                   .map(ev => ({ time: ev.timestamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), action: ev.changedTo }));
 }
 
-// ========== AGGIORNAMENTO UI ==========
 function updateMetrics(readings) {
     if (!readings.length) return;
     let latest = readings[readings.length-1];
@@ -142,7 +144,6 @@ function updateTimeline() {
     container.innerHTML = `<div class="timeline-events-list">${events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('')}</div>`;
 }
 
-// ========== MOCK DINAMICO (FALLBACK) ==========
 function generateDynamicMock(deviceId) {
     console.warn(`⚠️ Fallback dinamico per ${deviceId}`);
     let now = Date.now();
@@ -227,7 +228,6 @@ function init3D() {
     setTimeout(() => { if(!modelsLoaded) { console.warn('Modelli 3D non caricati, uso chiuso'); modelsLoaded=true; switchModel(pendingDoorState); updateCameraZoom(pendingDoorState); } }, 5000);
 }
 
-// ========== GRAFICO ==========
 function initChart() {
     let ctx = document.getElementById('dataChart').getContext('2d');
     chart = new Chart(ctx, {
@@ -272,7 +272,6 @@ function addSwipeListener() {
     });
 }
 
-// ========== INIZIALIZZAZIONE ==========
 async function initAll() {
     const authorized = await checkAuthorization();
     if (!authorized) return;
@@ -284,24 +283,15 @@ async function initAll() {
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-    // Pannello admin mobile
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {
             adminPanel.style.display = 'block';
             const selectEl = document.getElementById('adminIdSelectMobile');
-            selectEl.innerHTML = `
-                <option value="FRG-001">FRG-001 (Principale)</option>
-                <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
-            `;
-            if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
-                selectEl.value = currentDeviceId;
-            } else {
-                selectEl.value = 'FRG-001';
-            }
-            selectEl.onchange = () => {
-                window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`;
-            };
+            selectEl.innerHTML = `<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>`;
+            if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
+            else selectEl.value = 'FRG-001';
+            selectEl.onchange = () => { window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`; };
         }
     }
 

@@ -133,12 +133,12 @@ async function loginUser(identifier, password) {
 // ========== REINDIRIZZAMENTO POST-LOGIN ==========
 function redirectAfterLogin() {
     const redirectAfterScan = localStorage.getItem('redirectAfterScan');
-if (redirectAfterScan) {
-    localStorage.removeItem('redirectAfterScan');
-    window.location.href = redirectAfterScan;
-} else {
-    window.location.href = '../HTML/SelezioneDispositivo.html';
-}
+    if (redirectAfterScan) {
+        localStorage.removeItem('redirectAfterScan');
+        window.location.href = redirectAfterScan;
+    } else {
+        window.location.href = '../HTML/SelezioneDispositivo.html';
+    }
 }
 
 // ========== AZIONE PRINCIPALE: CLICK SUL BOTTONE (Login / Registrati) ==========
@@ -182,21 +182,16 @@ registroButton.addEventListener('click', async () => {
     const identifier = document.getElementById('identifier').value.trim();
 
     // Login speciale per amministratore hardcoded (non va all'API)
-    if (identifier === '#admin' && password === 'admin123') {
-        localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
-        redirectAfterLogin();
-        return;
-    }
+if (identifier === '#admin' && password === 'admin123') {
+    localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
+    redirectAfterLogin();
+}
 
     const result = await loginUser(identifier, password);
-    if (result.success) {
-        localStorage.setItem('currentUser', JSON.stringify({
-            nickname: result.nickname,
-            email: result.email,
-            isAdmin: result.isAdmin
-        }));
-        redirectAfterLogin();
-    } else {
+   if (result.success) {
+    localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: result.isAdmin }));
+    redirectAfterLogin();
+}else {
         showError(result.message || '❌ Credenziali errate');
     }
 });
