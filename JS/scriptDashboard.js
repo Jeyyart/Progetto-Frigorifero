@@ -1,44 +1,25 @@
-console.log('✅ scriptDashboard.js CARICATO - layout originale ripristinato con verifica autorizzazione');
+console.log('✅ scriptDashboard.js CARICATO - con proxy API');
 
-
-const response = await fetch("/api/verifica", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ 
-        userId: user.email, 
-        fridgeId: currentDeviceId 
-    })
-});
-// ========== VARIABILI GLOBALI ==========
 let chart = null;
 let currentChartType = 'temperature';
 let readingsHistory = [];
-let modelGroup = null;
-let modelClosed = null;
-let modelOpen = null;
-let currentModel = null;
-let scene = null;
-let camera = null;
-let renderer = null;
-let rotationY = 0;
-let autoRotateSpeed = 0.002;
-let currentUser = null;
-let currentDeviceId = null;
-let modelsReady = false;
-let pendingDoorState = false;
+let modelGroup = null, modelClosed = null, modelOpen = null, currentModel = null;
+let scene = null, camera = null, renderer = null;
+let rotationY = 0, autoRotateSpeed = 0.002;
+let currentUser = null, currentDeviceId = null;
+let modelsReady = false, pendingDoorState = false;
 
-// Legge l'ID dalla URL
 const urlParams = new URLSearchParams(window.location.search);
 currentDeviceId = urlParams.get('id');
 if (!currentDeviceId) {
-  console.warn("Nessun ID frigorifero specificato, uso FRG-001");
+  console.warn("Nessun ID frigorifero, uso FRG-001");
   currentDeviceId = "FRG-001";
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const API_VERIFICA = "https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php";
+const PROXY_URL = '/api/verifica';  // <-- usa il proxy locale
 
-// ========== VERIFICA AUTORIZZAZIONE ==========
+// ========== VERIFICA AUTORIZZAZIONE (tramite proxy) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -48,16 +29,8 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const response = await fetch("/api/verifica", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                userId: user.email, 
-                fridgeId: currentDeviceId 
-            })
-        });
+        const response = await fetch(`${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`);
         const data = await response.json();
-        
         if (data.authorized === true) return true;
         
         alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
@@ -71,14 +44,13 @@ async function checkAuthorization() {
     }
 }
 
-// ========== UTILITÀ ==========
+// ========== TUTTE LE ALTRE FUNZIONI (invariate) ==========
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }
 
 function processReadings(readings) {
   return readings.map(r => {
     let date = parseTimestamp(r.timestame || r.timestamp);
-    // Aggiunge 2 ore ai timestamp ricevuti
     date = new Date(date.getTime() + 7200000);
     return {
       timestamp: date,
@@ -135,18 +107,12 @@ function getTodayEvents(readings) {
                 .map(ev => ({ time: ev.timestamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), action: ev.changedTo }));
 }
 
-// ========== AGGIORNAMENTO UI ==========
 function updateMetrics(readings) {
   if (!readings.length) return;
   const latest = readings[readings.length-1];
   const isOpen = latest.doorOpen;
-
-  if (modelsReady) {
-    switchModel(isOpen);
-  } else {
-    pendingDoorState = isOpen;
-  }
-
+  if (modelsReady) switchModel(isOpen);
+  else pendingDoorState = isOpen;
   const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
   document.getElementById('tempValue').textContent = temp;
   document.getElementById('humidityValue').textContent = hum;
@@ -176,22 +142,15 @@ function updateTimeline() {
   timelineContainer.innerHTML = `<div class="timeline-events-list">${events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('')}</div>`;
 }
 
-// ========== GENERAZIONE MOCK DINAMICO (SOLO FALLBACK) ==========
 function generateDynamicMock(deviceId) {
-    console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId} (API non disponibile)`);
+    console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId}`);
     const now = Date.now();
     let baseTemp, baseHum;
-    if (deviceId === 'FRG-TEMPLATE') {
-        baseTemp = 3.8;
-        baseHum = 48;
-    } else {
-        baseTemp = 4.5;
-        baseHum = 42;
-    }
+    if (deviceId === 'FRG-TEMPLATE') { baseTemp = 3.8; baseHum = 48; }
+    else { baseTemp = 4.5; baseHum = 42; }
     const variationTemp = (Math.random() - 0.5) * 0.6;
     const variationHum = (Math.random() - 0.5) * 3;
     const doorOpen = (Math.floor(Date.now() / 60000) % 10) < 2;
-
     return [
         { timestame: new Date(now - 3600000).toISOString(), temperatura: baseTemp - 0.2, umidita: baseHum - 2, portaAperta: false },
         { timestame: new Date(now - 1800000).toISOString(), temperatura: baseTemp + 0.5, umidita: baseHum + 3, portaAperta: true },
@@ -199,32 +158,19 @@ function generateDynamicMock(deviceId) {
     ];
 }
 
-// ========== CHIAMATA API ==========
 async function fetchAndUpdate() {
     console.log(`🔄 Richiesta API per device: ${currentDeviceId}`);
     try {
-        const res = await fetch(API_URL, {
-            method: "GET",
-            headers: {
-                "FRIDGE_KEY": currentDeviceId,
-                "Cache-Control": "no-cache"
-            }
-        });
-
+        const res = await fetch(API_URL, { method: "GET", headers: { "FRIDGE_KEY": currentDeviceId, "Cache-Control": "no-cache" } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
         let data = await res.json();
         let readingsArray = Array.isArray(data) ? data : (data.data || data.readings);
         if (!readingsArray) throw new Error("Formato dati non riconosciuto");
-
-        if (readingsArray[0]?.deviceId) {
-            readingsArray = readingsArray.filter(r => r.deviceId === currentDeviceId);
-        }
-
+        if (readingsArray[0]?.deviceId) readingsArray = readingsArray.filter(r => r.deviceId === currentDeviceId);
         readingsHistory = processReadings(readingsArray);
-        console.log(`✅ Dati API ricevuti: ${readingsHistory.length} letture`);
+        console.log(`✅ Dati API: ${readingsHistory.length} letture`);
     } catch (e) {
-        console.error("❌ Errore API, uso fallback dinamico:", e);
+        console.error("❌ Errore API, uso fallback:", e);
         readingsHistory = processReadings(generateDynamicMock(currentDeviceId));
     }
     updateMetrics(readingsHistory);
@@ -232,7 +178,6 @@ async function fetchAndUpdate() {
     updateTimeline();
 }
 
-// ========== MODELLO 3D ==========
 function centerModel(model) {
   const box = new THREE.Box3().setFromObject(model);
   const center = box.getCenter(new THREE.Vector3());
@@ -277,11 +222,7 @@ function init3D() {
   animate();
   window.addEventListener('resize', () => { camera.aspect = canvas.clientWidth/canvas.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(canvas.clientWidth, canvas.clientHeight); });
   setTimeout(() => {
-    if (!modelsReady) {
-        console.warn('⚠️ Modelli 3D non caricati entro 5 secondi. Uso modello chiuso di default.');
-        modelsReady = true;
-        switchModel(pendingDoorState);
-    }
+    if (!modelsReady) { console.warn('⚠️ Modelli 3D non caricati, uso default'); modelsReady=true; switchModel(pendingDoorState); }
   }, 5000);
 }
 
@@ -330,7 +271,6 @@ function addSwipeListener() {
   });
 }
 
-// ========== INIZIALIZZAZIONE ==========
 async function initAll() {
     const authorized = await checkAuthorization();
     if (!authorized) return;
@@ -367,18 +307,10 @@ async function initAll() {
     if (currentUser.isAdmin) {
         document.getElementById('adminPanel').style.display = 'block';
         const selectEl = document.getElementById('adminIdSelect');
-        selectEl.innerHTML = `
-          <option value="FRG-001">FRG-001 (Principale)</option>
-          <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
-        `;
-        if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
-            selectEl.value = currentDeviceId;
-        } else {
-            selectEl.value = 'FRG-001';
-        }
-        selectEl.onchange = () => {
-            window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`;
-        };
+        selectEl.innerHTML = '<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>';
+        if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
+        else selectEl.value = 'FRG-001';
+        selectEl.onchange = () => { window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`; };
     }
 }
 

@@ -1,9 +1,6 @@
-// scriptScanTelefono.js - con verifica associazione tramite proxy
-
 let html5QrCode = null;
 let currentScannedFridgeId = null;
-
-const API_VERIFICA_ASSOCIAZIONE = "/api/verifica";  // Proxy locale
+const PROXY_URL = '/api/verifica';
 
 function extractFridgeIdFromText(text) {
     const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard(?:Mobile)?\.html\?id=(FRG-[A-Z0-9]+)/i;
@@ -52,70 +49,48 @@ function showTemporaryMessage(message, isSuccess = false) {
 
 async function verificaUtenteEAutorizza(fridgeId) {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    
     if (!currentUser) {
         localStorage.setItem('pendingFridgeId', fridgeId);
         localStorage.setItem('redirectAfterScan', window.location.href);
         window.location.href = '../HTML/registro.html';
         return;
     }
-
     if (currentUser.isAdmin === true) {
         stopScanner();
         window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         return;
     }
-
     showTemporaryMessage("Verifica autorizzazione in corso...", false);
-    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-
     try {
-        const response = await fetch(API_VERIFICA_ASSOCIAZIONE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                userId: currentUser.email,
-                fridgeId: fridgeId
-            }),
-            signal: controller.signal
-        });
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+        const response = await fetch(url, { method: 'GET', signal: controller.signal });
         clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        console.log("Risposta API verifica:", data);
-        
+        console.log("Risposta proxy:", data);
         if (data.authorized === true) {
             stopScanner();
             window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         } else {
             let errorMsg = data.error || "Il tuo account non è autorizzato per questo frigorifero";
             showTemporaryMessage(`❌ ${errorMsg}`, false);
-            setTimeout(() => {
-                window.location.href = '../HTML/ScanTelefono.html';
-            }, 3000);
+            setTimeout(() => { window.location.href = '../HTML/ScanTelefono.html'; }, 3000);
         }
     } catch (err) {
         clearTimeout(timeoutId);
-        console.error("Errore verifica API:", err);
+        console.error("Errore verifica:", err);
         let msg = "Errore di connessione al server. Riprova.";
         if (err.name === 'AbortError') msg = "Timeout: server non risponde.";
         showTemporaryMessage(msg, false);
-        setTimeout(() => {
-            window.location.href = '../HTML/ScanTelefono.html';
-        }, 3000);
+        setTimeout(() => { window.location.href = '../HTML/ScanTelefono.html'; }, 3000);
     }
 }
 
 function onQrCodeScanned(decodedText) {
     console.log(`📷 QR letto: ${decodedText}`);
     const fridgeId = extractFridgeIdFromText(decodedText);
-    
     if (fridgeId && fridgeId.startsWith("FRG-")) {
         verificaUtenteEAutorizza(fridgeId);
     } else {
@@ -126,25 +101,15 @@ function onQrCodeScanned(decodedText) {
 function startScanner() {
     document.getElementById('scanBtnScan').style.display = 'none';
     document.getElementById('stopBtnScan').style.display = 'block';
-
     html5QrCode = new Html5Qrcode("qr-reader");
-    const config = {
-        fps: 15,
-        qrbox: { width: 280, height: 280 },
-        videoConstraints: { facingMode: "environment" }
-    };
-
-    html5QrCode.start(
-        { facingMode: "environment" },
-        config,
-        onQrCodeScanned,
-        () => {}
-    ).catch(err => {
-        console.error('Errore fotocamera:', err);
-        showTemporaryMessage("Impossibile accedere alla fotocamera. Verifica i permessi.");
-        document.getElementById('scanBtnScan').style.display = 'block';
-        document.getElementById('stopBtnScan').style.display = 'none';
-    });
+    const config = { fps: 15, qrbox: { width: 280, height: 280 }, videoConstraints: { facingMode: "environment" } };
+    html5QrCode.start({ facingMode: "environment" }, config, onQrCodeScanned, () => {})
+        .catch(err => {
+            console.error('Errore fotocamera:', err);
+            showTemporaryMessage("Impossibile accedere alla fotocamera. Verifica i permessi.");
+            document.getElementById('scanBtnScan').style.display = 'block';
+            document.getElementById('stopBtnScan').style.display = 'none';
+        });
 }
 
 function stopScanner() {
@@ -159,7 +124,6 @@ function stopScanner() {
 window.onload = () => {
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
-    
     const pendingId = localStorage.getItem('pendingFridgeId');
     if (pendingId) {
         localStorage.removeItem('pendingFridgeId');
