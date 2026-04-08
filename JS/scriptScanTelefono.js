@@ -1,15 +1,25 @@
+// Variabile che conterrà l'istanza dello scanner QR
 let html5QrCode = null;
-let currentScannedFridgeId = null;
-const PROXY_URL = '/api/verifica';
 
+// Funzione per estrarre l'ID frigorifero da un testo (URL o ID diretto)
 function extractFridgeIdFromText(text) {
+    // Pattern per URL Vercel con qualsiasi suffisso, accetta sia Dashboard.html che DashboardMobile.html
     const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard(?:Mobile)?\.html\?id=(FRG-[A-Z0-9]+)/i;
     const match = text.match(urlPattern);
-    if (match && match[1]) return match[1];
-    if (text && text.startsWith('FRG-')) return text;
+    if (match && match[1]) {
+        console.log(`✅ ID estratto da URL: ${match[1]}`);
+        return match[1];
+    }
+    // Pattern per ID diretto
+    if (text && text.startsWith('FRG-')) {
+        console.log(`✅ ID diretto: ${text}`);
+        return text;
+    }
+    console.warn(`⚠️ Testo QR non riconosciuto: ${text}`);
     return null;
 }
 
+// Funzione per creare un div per i messaggi temporanei
 function createMessageDiv() {
     let msg = document.getElementById('scanMessage');
     if (!msg) {
@@ -31,6 +41,7 @@ function createMessageDiv() {
     return msg;
 }
 
+// Funzione per mostrare un messaggio temporaneo
 function showTemporaryMessage(message, isSuccess = false) {
     const msgDiv = createMessageDiv();
     msgDiv.textContent = message;
@@ -44,76 +55,54 @@ function showTemporaryMessage(message, isSuccess = false) {
     msgDiv.style.display = 'block';
     setTimeout(() => {
         msgDiv.style.display = 'none';
-    }, 4000);
+    }, 3000);
 }
 
-async function verificaUtenteEAutorizza(fridgeId) {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {
-        localStorage.setItem('pendingFridgeId', fridgeId);
-        localStorage.setItem('redirectAfterScan', window.location.href);
-        window.location.href = '../HTML/registro.html';
-        return;
-    }
-    if (currentUser.isAdmin === true) {
-        stopScanner();
-        window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
-        return;
-    }
-    showTemporaryMessage("Verifica autorizzazione in corso...", false);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    try {
-        const response = await fetch(PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser.email, fridgeId: fridgeId }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        console.log("Risposta proxy:", data);
-        if (data.authorized === true) {
-            stopScanner();
-            window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
-        } else {
-            let errorMsg = data.error || "Il tuo account non è autorizzato per questo frigorifero";
-            showTemporaryMessage(`❌ ${errorMsg}`, false);
-            setTimeout(() => { window.location.href = '../HTML/ScanTelefono.html'; }, 3000);
-        }
-    } catch (err) {
-        clearTimeout(timeoutId);
-        console.error("Errore verifica:", err);
-        let msg = "Errore di connessione al server. Riprova.";
-        if (err.name === 'AbortError') msg = "Timeout: server non risponde.";
-        showTemporaryMessage(msg, false);
-        setTimeout(() => { window.location.href = '../HTML/ScanTelefono.html'; }, 3000);
-    }
-}
-
-function onQrCodeScanned(decodedText) {
-    console.log(`📷 QR letto: ${decodedText}`);
-    const fridgeId = extractFridgeIdFromText(decodedText);
-    if (fridgeId && fridgeId.startsWith("FRG-")) {
-        verificaUtenteEAutorizza(fridgeId);
-    } else {
-        showTemporaryMessage("⚠️ QR non valido. Inquadra un codice NEXORA valido (FRG-XXXX)");
-    }
-}
-
+// Avvia scanner
 function startScanner() {
     document.getElementById('scanBtnScan').style.display = 'none';
     document.getElementById('stopBtnScan').style.display = 'block';
+
     html5QrCode = new Html5Qrcode("qr-reader");
-    const config = { fps: 15, qrbox: { width: 280, height: 280 }, videoConstraints: { facingMode: "environment" } };
-    html5QrCode.start({ facingMode: "environment" }, config, onQrCodeScanned, () => {})
-        .catch(err => {
-            console.error('Errore fotocamera:', err);
-            showTemporaryMessage("Impossibile accedere alla fotocamera. Verifica i permessi.");
-            document.getElementById('scanBtnScan').style.display = 'block';
-            document.getElementById('stopBtnScan').style.display = 'none';
-        });
+    
+    const config = {
+        fps: 15,
+        qrbox: { width: 280, height: 280 },
+        videoConstraints: {
+            facingMode: "environment",
+            advanced: [{ zoom: 1.0 }],
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+        }
+    };
+
+    html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+            console.log(`📷 QR letto: ${decodedText}`);
+            const fridgeId = extractFridgeIdFromText(decodedText);
+            
+            if (fridgeId && fridgeId.startsWith("FRG-")) {
+                // Controlla se l'ID è supportato (solo FRG-001 e FRG-TEMPLATE)
+                if (fridgeId !== 'FRG-001' && fridgeId !== 'FRG-TEMPLATE') {
+                    showTemporaryMessage('📌 ID non ancora supportato – sarà disponibile in futuro', true);
+                    return;
+                }
+                stopScanner();
+                // Reindirizza alla dashboard MOBILE (ottimizzata per telefono)
+                window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
+            } else {
+                showTemporaryMessage('⚠️ QR non valido. Inquadra un codice NEXORA valido (FRG-XXXX)');
+            }
+        },
+        () => {}
+    ).catch(err => {
+        console.error('Errore fotocamera:', err);
+        showTemporaryMessage('Impossibile accedere alla fotocamera. Verifica i permessi.', false);
+        document.getElementById('scanBtnScan').style.display = 'block';
+        document.getElementById('stopBtnScan').style.display = 'none';
+    });
 }
 
 function stopScanner() {
@@ -128,11 +117,11 @@ function stopScanner() {
 window.onload = () => {
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
-    const pendingId = localStorage.getItem('pendingFridgeId');
-    if (pendingId) {
-        localStorage.removeItem('pendingFridgeId');
-        verificaUtenteEAutorizza(pendingId);
-    } else {
-        startScanner();
-    }
+    setTimeout(() => startScanner(), 500);
 };
+
+window.addEventListener('resize', () => {
+    if (html5QrCode && html5QrCode.isScanning) {
+        stopScanner().then(() => startScanner());
+    }
+});
