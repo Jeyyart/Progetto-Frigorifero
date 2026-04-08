@@ -133,12 +133,12 @@ async function loginUser(identifier, password) {
 // ========== REINDIRIZZAMENTO POST-LOGIN ==========
 function redirectAfterLogin() {
     const redirectAfterScan = localStorage.getItem('redirectAfterScan');
-    if (redirectAfterScan) {
-        localStorage.removeItem('redirectAfterScan');
-        window.location.href = redirectAfterScan;
-    } else {
-        window.location.href = '../HTML/SelezioneDispositivo.html';
-    }
+if (redirectAfterScan) {
+    localStorage.removeItem('redirectAfterScan');
+    window.location.href = redirectAfterScan;
+} else {
+    window.location.href = '../HTML/SelezioneDispositivo.html';
+}
 }
 
 // ========== AZIONE PRINCIPALE: CLICK SUL BOTTONE (Login / Registrati) ==========

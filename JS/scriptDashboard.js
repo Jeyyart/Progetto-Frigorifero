@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - con verifica GET diretta');
+console.log('✅ scriptDashboard.js CARICATO - verifica GET');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -17,9 +17,9 @@ if (!currentDeviceId) {
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
+const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE (GET diretta) ==========
+// ========== VERIFICA AUTORIZZAZIONE (GET) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -29,10 +29,10 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
-        const response = await fetch(url);
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
-        console.log("Risposta verifica:", data);
+        console.log("Risposta autorizzazione:", data);
         if (data.authorized === true) return true;
         
         let errore = data.error || "Non autorizzato";
@@ -275,15 +275,13 @@ function addSwipeListener() {
 }
 
 async function initAll() {
-    const authorized = await checkAuthorization();
+        const authorized = await checkAuthorization();
     if (!authorized) return;
-
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     const name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
-
     initChart();
     addTabListeners();
     addSwipeListener();

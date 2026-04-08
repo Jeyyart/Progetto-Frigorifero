@@ -1,6 +1,6 @@
 let html5QrCode = null;
 let currentScannedFridgeId = null;
-const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
+const PROXY_URL = '/api/verifica';
 
 function extractFridgeIdFromText(text) {
     const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard(?:Mobile)?\.html\?id=(FRG-[A-Z0-9]+)/i;
@@ -49,12 +49,14 @@ function showTemporaryMessage(message, isSuccess = false) {
 
 async function verificaUtenteEAutorizza(fridgeId) {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    // Se non loggato, salva l'ID e reindirizza al login
     if (!currentUser) {
         localStorage.setItem('pendingFridgeId', fridgeId);
         localStorage.setItem('redirectAfterScan', window.location.href);
         window.location.href = '../HTML/registro.html';
         return;
     }
+    // Admin bypassa verifica
     if (currentUser.isAdmin === true) {
         stopScanner();
         window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
@@ -64,8 +66,9 @@ async function verificaUtenteEAutorizza(fridgeId) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     try {
-        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
-        const response = await fetch(url, { signal: controller.signal });
+        // Chiamata GET al proxy (che inoltra al backend)
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+        const response = await fetch(url, { method: 'GET', signal: controller.signal });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();

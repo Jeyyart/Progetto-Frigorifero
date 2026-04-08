@@ -1,7 +1,8 @@
+// api/verifica.js - Proxy per verifica associazione (metodo GET)
 export default async function handler(req, res) {
-  // Imposta CORS headers
+  // Imposta CORS per permettere richieste dal frontend
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -9,24 +10,23 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'Method not allowed, use GET' });
     return;
   }
 
-  const { userId, fridgeId } = req.body;
+  const { userId, fridgeId } = req.query;
   if (!userId || !fridgeId) {
     res.status(400).json({ error: 'Missing userId or fridgeId' });
     return;
   }
 
-  const targetUrl = 'https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php';
+  const targetUrl = `https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php?userId=${encodeURIComponent(userId)}&fridgeId=${encodeURIComponent(fridgeId)}`;
 
   try {
     const response = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, fridgeId })
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
     const data = await response.json();
     res.status(response.status).json(data);

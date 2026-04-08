@@ -23,7 +23,7 @@ if (!idParam || !idParam.startsWith('FRG-')) {
 console.log(`Device ID: ${currentDeviceId}`);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
+const PROXY_URL = '/api/verifica';
 
 // ========== VERIFICA AUTORIZZAZIONE (POST al proxy) ==========
 async function checkAuthorization() {
@@ -35,24 +35,21 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
-        const response = await fetch(url);
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
-        console.log("Risposta verifica mobile:", data);
+        console.log("Risposta autorizzazione mobile:", data);
         if (data.authorized === true) return true;
-        
-        let errore = data.error || "Non autorizzato";
-        alert(`❌ ${errore}\n\nUtente: ${user.email}\nFrigo: ${currentDeviceId}`);
+        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
-        console.error("Errore verifica mobile:", err);
+        console.error("Errore verifica:", err);
         alert("Errore di connessione al server. Riprova più tardi.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     }
 }
-
 // ========== UTILITÀ ==========
 function showUserError(msg) {
     const statusDiv = document.getElementById('apiStatus');
