@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboardMobile.js caricato - con proxy API POST');
+console.log('✅ scriptDashboardMobile.js caricato - con verifica GET diretta');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -23,7 +23,7 @@ if (!idParam || !idParam.startsWith('FRG-')) {
 console.log(`Device ID: ${currentDeviceId}`);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const PROXY_URL = '/api/verifica';
+const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
 
 // ========== VERIFICA AUTORIZZAZIONE (POST al proxy) ==========
 async function checkAuthorization() {
@@ -35,13 +35,10 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const response = await fetch(PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.email, fridgeId: currentDeviceId })
-        });
+        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const response = await fetch(url);
         const data = await response.json();
-        console.log("Risposta autorizzazione mobile:", data);
+        console.log("Risposta verifica mobile:", data);
         if (data.authorized === true) return true;
         
         let errore = data.error || "Non autorizzato";

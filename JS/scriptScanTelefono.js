@@ -1,6 +1,6 @@
 let html5QrCode = null;
 let currentScannedFridgeId = null;
-const PROXY_URL = '/api/verifica';
+const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
 
 function extractFridgeIdFromText(text) {
     const urlPattern = /https:\/\/progetto-frigorifero[^\/]*\.vercel\.app\/HTML\/Dashboard(?:Mobile)?\.html\?id=(FRG-[A-Z0-9]+)/i;
@@ -64,16 +64,12 @@ async function verificaUtenteEAutorizza(fridgeId) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     try {
-        const response = await fetch(PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser.email, fridgeId: fridgeId }),
-            signal: controller.signal
-        });
+        const url = `${VERIFICA_URL}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+        const response = await fetch(url, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        console.log("Risposta proxy:", data);
+        console.log("Risposta verifica:", data);
         if (data.authorized === true) {
             stopScanner();
             window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
