@@ -1,23 +1,29 @@
 <!DOCTYPE html>
+<!--
+  CONNETTI FRIGORIFERO - DESKTOP (ConnettiFrigo.html)
+  Versione per computer/tablet della pagina di connessione.
+  Offre due modalità: scansione tramite QR code (da mostrare al telefono) oppure inserimento manuale dell'ID.
+  Include header, logo, tema, logout e nome utente.
+-->
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport: assicura che la pagina sia scalabile sui dispositivi mobili, ma con user-scalable=no impedisce lo zoom (tipico per app) -->
+    <!-- viewport standard: permette lo zoom su desktop -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>NEXORA Smart Fridge - Connetti Frigorifero</title>
-    <!-- Foglio di stile specifico per la pagina di connessione -->
+    <!-- Foglio di stile per la connessione desktop -->
     <link rel="stylesheet" href="../CSS/styleConnetti.css">
-    <!-- Font moderno da Google Fonts -->
+    <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Script JavaScript per la logica di connessione, tema e logout -->
+    <!-- Script JavaScript per la connessione, tema, logout -->
     <script src="../JS/scriptConnetti.js" defer></script>
 </head>
 <body>
-    <!-- Contenitore principale: organizza header, titolo e sezioni di connessione -->
+    <!-- Contenitore principale -->
     <div class="containerSito">
-        <!-- HEADER: logo, pulsante tema, logout, nome utente (identico alle altre pagine) -->
+        <!-- Header identico alle altre pagine -->
         <div class="header">
             <div class="header-left">
                 <div class="logo-placeholder">
@@ -26,35 +32,33 @@
                 </div>
             </div>
             <div class="header-right">
-                <!-- Pulsante per cambiare tema (sole/luna) -->
                 <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
-                <!-- Pulsante logout: chiama la funzione globale logout() -->
+                <!-- Pulsante logout: chiama la funzione logout() definita nello script -->
                 <button onclick="logout()" class="logout-btn">ESCI</button>
-                <!-- Badge con nome utente -->
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
 
-        <!-- Messaggio di benvenuto personalizzato con il nome dell'utente -->
+        <!-- Messaggio di benvenuto -->
         <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, collega il tuo frigorifero</p>
 
         <!-- Titolo principale della pagina -->
         <h1 class="page-title">Connetti al tuo Frigorifero</h1>
 
-        <!-- Contenitore a due colonne: QR code (sinistra) e inserimento manuale ID (destra) -->
+        <!-- Contenitore a due colonne (grazie al CSS) -->
         <div class="connect-container">
-            <!-- Card QR: per connettersi tramite scansione telefono -->
+            <!-- Card sinistra: QR code per la connessione tramite telefono -->
             <div class="connect-card">
                 <h2>📱 Scansiona dal telefono</h2>
                 <p>Usa la fotocamera del tuo telefono per connetterti</p>
                 <div class="qr-wrapper">
-                    <!-- Immagine statica del QR code (deve essere generata in base all'URL di connessione) -->
+                    <!-- Immagine statica del QR code che reindirizza alla pagina mobile di connessione -->
                     <img id="qrImage" src="../IMG/QRSitoTelefono.png" alt="QR Code" class="qr-code-img">
                     <p class="qr-hint">Scansiona questo QR con il telefono</p>
                 </div>
             </div>
 
-            <!-- Card connessione manuale: inserimento ID frigorifero -->
+            <!-- Card destra: inserimento manuale ID -->
             <div class="connect-card">
                 <h2>🔢 Inserisci ID</h2>
                 <p>Non riesci a usare il QR?</p>
@@ -63,9 +67,12 @@
                 <div id="errorContainer" class="error-message" style="display:none;"></div>
 
                 <br>
-                <!-- Campo input per l'ID del frigorifero (deve iniziare con "FRG-") -->
+                <!-- Campo input per l'ID del frigorifero (deve iniziare con FRG-) -->
                 <input type="text" id="deviceId" placeholder="ID del frigorifero (es. FRG-987654)" class="manual-input">
-                <!-- Bottone che avvia la connessione manuale -->
+                <!--
+                  Bottone che avvia la connessione manuale.
+                  Al click chiama la funzione JavaScript "connectManual()" definita in scriptConnetti.js.
+                -->
                 <button onclick="connectManual()" class="registroButton">Connetti</button>
             </div>
         </div>

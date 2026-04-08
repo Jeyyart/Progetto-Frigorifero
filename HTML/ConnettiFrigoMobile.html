@@ -1,23 +1,29 @@
 <!DOCTYPE html>
+<!--
+  CONNETTI FRIGORIFERO - MOBILE (ConnettiFrigoMobile.html)
+  Versione mobile per connettere un nuovo frigorifero.
+  Offre due modalità: scansione QR (rimanda alla pagina ScanTelefono.html) o inserimento manuale dell'ID.
+  Include header con logo, tema, logout e nome utente.
+-->
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport specifico per mobile: disabilita lo zoom, si adatta alla copertura del display (viewport-fit=cover per notch) -->
+    <!-- viewport ottimizzato per mobile (disabilita zoom, si adatta al notch) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Connetti (Mobile)</title>
-    <!-- Foglio di stile specifico per l'interfaccia mobile -->
+    <!-- Foglio di stile specifico per la connessione mobile -->
     <link rel="stylesheet" href="../CSS/styleConnettiMobile.css">
-    <!-- Font moderno da Google Fonts -->
+    <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Script JavaScript per la logica di connessione (mobile) -->
+    <!-- Script JavaScript per la logica di connessione mobile -->
     <script src="../JS/scriptConnettiMobile.js" defer></script>
 </head>
 <body>
-    <!-- Contenitore principale ottimizzato per mobile (flex colonna) -->
+    <!-- Contenitore principale della pagina di connessione (flex colonna) -->
     <div class="mobile-connect-container">
-        <!-- HEADER: logo, pulsante tema, logout, nome utente -->
+        <!-- Header con logo, pulsante tema, logout, nome utente -->
         <div class="header">
             <div class="logo-title">
                 <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
@@ -26,9 +32,9 @@
             <div class="header-actions">
                 <!-- Pulsante cambio tema (sole/luna) -->
                 <button id="themeToggleBtn" class="theme-toggle">☀️</button>
-                <!-- Pulsante logout (id usato nel JS per attaccare l'evento) -->
+                <!-- Pulsante logout: ID "logoutBtn" gestito dallo script -->
                 <button id="logoutBtn" class="logout-btn">ESCI</button>
-                <!-- Badge con nome utente -->
+                <!-- Badge utente -->
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
@@ -36,22 +42,31 @@
         <!-- Messaggio di benvenuto personalizzato -->
         <p class="greeting">Ciao <span id="userNameHeader2"></span>, collega il tuo frigorifero</p>
 
-        <!-- Riga flessibile che in verticale impila le due sezioni, in orizzontale le affianca -->
+        <!--
+          Riga flessibile: in verticale (mobile) impila le due sezioni, in orizzontale le affianca (grazie a CSS).
+        -->
         <div class="connect-row">
             <!-- Sezione scansione QR: solo un pulsante che rimanda alla pagina di scansione -->
             <div class="scan-section">
                 <h3>Scansiona da telefono</h3>
+                <!--
+                  Pulsante che reindirizza alla pagina ScanTelefono.html.
+                  L'ID "scanBtn" viene utilizzato nello script per aggiungere l'evento di navigazione.
+                -->
                 <button id="scanBtn" class="scan-button">📷 vai a scanner</button>
             </div>
 
-            <!-- Sezione inserimento manuale ID (con validazione) -->
+            <!-- Sezione inserimento manuale ID -->
             <div class="manual-section">
                 <h3>Inserisci ID</h3>
-                <!-- Contenitore per messaggi di errore (inizialmente nascosto) -->
+                <!-- Contenitore per messaggi di errore (es. ID non valido) -->
                 <div id="errorContainer" class="error-message" style="display:none;"></div>
-                <!-- Campo input per l'ID del frigorifero (deve iniziare con FRG-) -->
+                <!--
+                  Campo di input per l'ID del frigorifero.
+                  Il placeholder suggerisce il formato (es. FRG-987654).
+                -->
                 <input type="text" id="deviceId" placeholder="ID del frigorifero (es. FRG-987654)" class="device-input" autocomplete="off">
-                <!-- Pulsante di connessione -->
+                <!-- Pulsante di connessione: l'ID "connectBtn" è gestito dallo script per la connessione manuale -->
                 <button id="connectBtn" class="connect-button">Connetti</button>
             </div>
         </div>

@@ -1,3 +1,8 @@
+// ============================================================
+// FILE: scriptSelezione.js
+// ============================================================
+// Pagina di selezione dispositivo: l'utente sceglie quale dispositivo (es. frigorifero) monitorare.
+
 // Variabile che conterrà l'oggetto dell'utente corrente (letta dal localStorage)
 let currentUser = null;
 

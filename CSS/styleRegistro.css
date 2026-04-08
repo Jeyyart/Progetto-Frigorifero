@@ -1,6 +1,10 @@
+/* ============================================================
+   FILE: styleRegistro.css
+   ============================================================ */
+
 /* VARIABILI CSS (colori) per il tema scuro (di default) */
 :root {
-    --bg: #121212;          /* sfondo principale */
+    --bg: #121212;          /* sfondo principale (nero leggermente più chiaro) */
     --card: #1e1e1e;        /* sfondo della card */
     --accent: #22c55e;      /* verde per accenti e pulsanti */
     --text: #f0f0f0;        /* colore testo principale */
@@ -32,7 +36,7 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: hidden;      /* nasconde scroll orizzontale */
     padding: 20px;
 }
 
@@ -44,7 +48,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    z-index: 100;
+    z-index: 100;            /* sopra gli altri elementi */
 }
 .global-logo .logo-img {
     width: 48px;
@@ -172,7 +176,7 @@ body {
     margin-top: 10px;
 }
 .registroButton:hover {
-    background: #16a34a;
+    background: #16a34a;    /* verde più scuro */
     transform: translateY(-2px);
 }
 

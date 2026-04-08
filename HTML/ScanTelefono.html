@@ -1,23 +1,31 @@
 <!DOCTYPE html>
+<!--
+  SCAN TELEFONO (ScanTelefono.html)
+  Pagina specifica per dispositivi mobili che utilizza la fotocamera per leggere un QR code.
+  Il QR code contiene l'ID del frigorifero da connettere.
+  Utilizza la libreria html5-qrcode per accedere alla fotocamera e decodificare il QR.
+-->
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport ottimizzato per mobile: disabilita zoom, si adatta alla copertura del display (utile per notch/barre) -->
+    <!--
+      viewport ottimizzato per mobile: disabilita lo zoom e si adatta alle aree con notch (viewport-fit=cover).
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Scanner</title>
-    <!-- Foglio di stile specifico per la pagina di scansione QR -->
+    <!-- Foglio di stile per la pagina di scansione -->
     <link rel="stylesheet" href="../CSS/styleScanTelefono.css">
-    <!-- Font moderno da Google Fonts -->
+    <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Libreria esterna HTML5-QRCode: permette di leggere QR code dalla fotocamera del telefono -->
+    <!-- Libreria HTML5-QRCode: permette di leggere QR code dalla webcam -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- Script JavaScript personalizzato per la logica di scansione -->
+    <!-- Script personalizzato per la gestione dello scanner -->
     <script src="../JS/scriptScanTelefono.js" defer></script>
 </head>
 <body>
-    <!-- Contenitore principale della pagina di scansione -->
+    <!-- Contenitore principale della scansione -->
     <div class="scan-container">
         <!-- Header con logo e nome app -->
         <div class="header-scan">
@@ -25,15 +33,27 @@
             <h1>NEXORA Smart Fridge</h1>
         </div>
 
-        <!-- Sezione centrale: contiene il lettore QR e i pulsanti -->
+        <!-- Sezione centrale: lettore QR e pulsanti -->
         <div class="scan-main">
-            <!-- Riquadro dove verrà visualizzato il flusso della fotocamera -->
+            <!-- Riquadro che contiene il flusso video della fotocamera per la scansione -->
             <div class="qr-reader-box">
-                <div id="qr-reader"></div>   <!-- Il contenitore verrà utilizzato dalla libreria html5-qrcode -->
+                <!--
+                  Div con ID "qr-reader": verrà utilizzato dalla libreria html5-qrcode per mostrare il video e il riquadro di scansione.
+                -->
+                <div id="qr-reader"></div>
             </div>
-            <!-- Pulsanti per avviare e fermare lo scanner -->
+            <!-- Pulsanti di controllo scanner -->
             <div class="scan-controls">
+                <!--
+                  Pulsante per avviare la fotocamera e iniziare la scansione.
+                  Al click chiama la funzione JavaScript "startScanner()" definita in scriptScanTelefono.js.
+                -->
                 <button onclick="startScanner()" id="scanBtnScan" class="registroButton">📷 Avvia Scanner</button>
+                <!--
+                  Pulsante per fermare la fotocamera e interrompere la scansione.
+                  Inizialmente nascosto (style="display:none;"), viene mostrato dopo l'avvio.
+                  Chiama la funzione "stopScanner()".
+                -->
                 <button onclick="stopScanner()" id="stopBtnScan" class="registroButton stop-btn" style="display:none;">⏹️ Ferma Scanner</button>
             </div>
         </div>

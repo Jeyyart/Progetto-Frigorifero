@@ -1,42 +1,53 @@
 <!DOCTYPE html>
+<!--
+  REGISTRO/LOGIN (registro.html)
+  Pagina di accesso e registrazione per l'applicazione NEXORA Smart Fridge.
+  Permette all'utente di accedere con email/nickname e password, oppure di registrarsi (creare un nuovo account).
+  Gestisce anche il cambio tema (chiaro/scuro) e mostra errori di validazione.
+-->
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <!-- viewport standard: scala la pagina su dispositivi mobili senza impedire lo zoom -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXORA Smart Fridge - Accedi</title>
-    <!-- Foglio di stile esterno per il design della pagina -->
+    <!-- Foglio di stile CSS per la pagina di login/registrazione -->
     <link rel="stylesheet" href="../CSS/styleRegistro.css">
-    <!-- Font moderno da Google Fonts -->
+    <!-- Font "Inter" per un aspetto moderno -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
+    <!-- Icona del sito (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Script JavaScript (gestisce login, registrazione, tema, errori) -->
+    <!-- Script JavaScript con la logica di login, registrazione, tema, gestione errori -->
     <script src="../JS/scriptRegistro.js" defer></script>
 </head>
 <body>
-    <!-- LOGO GLOBALE: sempre visibile in alto a sinistra -->
+    <!-- Logo globale: sempre visibile in alto a sinistra -->
     <div class="global-logo">
         <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
         <h1>NEXORA Smart Fridge</h1>
     </div>
 
-    <!-- PULSANTE PER CAMBIARE TEMA (scuro/chiaro) - sempre visibile in alto a destra -->
+    <!--
+      Pulsante per cambiare tema (chiaro/scuro).
+      La classe "theme-toggle-global" e l'ID "themeToggleBtn" sono gestiti dallo script.
+    -->
     <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
 
-    <!-- CARD CENTRALE: contiene il modulo di login/registrazione -->
+    <!-- Card centrale che contiene il modulo di login/registrazione -->
     <div class="containerRegistro">
         <div class="registroHeader">
-            <!-- Titolo dinamico: cambia testo tra "Accedi" e "Registrati" -->
+            <!-- Titolo dinamico: cambia tra "Accedi" e "Registrati" in base alla modalità -->
             <h2 id="registroSubtitle">Accedi al tuo sistema di monitoraggio</h2>
         </div>
 
-        <!-- CONTENITORE PER I MESSAGGI DI ERRORE (es. credenziali errate, password debole) -->
+        <!-- Contenitore per i messaggi di errore (es. credenziali errate, password troppo debole) -->
         <div id="errorContainer" class="error-message" style="display:none;"></div>
 
         <div class="registroForm">
             <!-- Campo LOGIN: email o nickname (visibile solo in modalità login) -->
             <div class="RegistroForm" id="loginIdentifierGroup">
                 <label for="identifier">Email o Nickname</label>
+                <!-- Input di testo per inserire l'identificativo -->
                 <input type="text" id="identifier" placeholder="Esempio@email.com o Nickname" required>
             </div>
 
@@ -45,29 +56,35 @@
                 <label for="nickname">Nickname</label>
                 <input type="text" id="nickname" placeholder="Il tuo nome">
             </div>
+
             <!-- Campo EMAIL (visibile solo in registrazione) -->
             <div class="RegistroForm" id="emailGroup" style="display:none;">
                 <label for="email">Email</label>
                 <input type="text" id="email" placeholder="tua@email.com">
             </div>
 
-            <!-- Campo PASSWORD (sempre visibile) -->
+            <!-- Campo PASSWORD (sempre visibile sia in login che registrazione) -->
             <div class="RegistroForm">
                 <label for="password">Password</label>
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
+
             <!-- Campo CONFERMA PASSWORD (visibile solo in registrazione) -->
             <div class="RegistroForm" id="registroConfirmPasswordGroup" style="display:none;">
                 <label for="confirmPassword">Conferma Password</label>
                 <input type="password" id="confirmPassword" placeholder="••••••••">
             </div>
 
-            <!-- BOTTONE PRINCIPALE: cambia testo tra "Accedi" e "Registrati" -->
+            <!--
+              Bottone principale: il testo cambia dinamicamente tra "Accedi" e "Registrati".
+              L'ID "registroButton" viene utilizzato nello script per associare l'azione corretta.
+            -->
             <button id="registroButton" class="registroButton">Accedi</button>
 
-            <!-- LINK PER PASSARE DA LOGIN A REGISTRAZIONE E VICEVERSA -->
+            <!-- Link per passare da login a registrazione e viceversa -->
             <div class="registroToggle">
                 <span id="registroToggleText">Non hai un account? </span>
+                <!-- Link che attiva il cambio modalità (login ↔ registrazione) -->
                 <a id="registroToggleLink">Registrati</a>
             </div>
         </div>

@@ -1,8 +1,13 @@
+// ============================================================
+// FILE: scriptConnetti.js (versione desktop)
+// ============================================================
+// Pagina di connessione per desktop: mostra un QR code e un campo manuale.
+
 // Variabile che conterrà l'oggetto dell'utente corrente (recuperato dal localStorage)
 let currentUser = null;
 let messageTimeout = null;
 
-
+// Mostra un messaggio temporaneo (errore o info) con stile appropriato
 function showMessage(message, isError = false) {
     const errorEl = document.getElementById('errorContainer');
     if (messageTimeout) clearTimeout(messageTimeout);
@@ -26,7 +31,7 @@ function applyThemeAndUser() {
     // 2. Mostra il nome utente nell'header (primo span)
     const name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
-    // 3. Mostra il nome utente nel badge con l'icona
+    // 3. Mostra il nome utente nel badge con l'icona (userDisplay)
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
     // 4. Mostra il nome utente nel messaggio di benvenuto (secondo span)
@@ -35,7 +40,7 @@ function applyThemeAndUser() {
 
     // 5. Gestione del tema (chiaro/scuro) salvato in localStorage
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
-    document.documentElement.setAttribute('data-theme', theme);   // applica il tema all'elemento <html>
+    document.documentElement.setAttribute('data-theme', theme);
 
     // 6. Imposta l'emoji corretta sul pulsante tema (sole per dark, luna per light)
     const themeBtn = document.getElementById('themeToggleBtn');
@@ -78,6 +83,7 @@ function connectManual() {
         showMessage('📌 ID non ancora supportato – sarà disponibile in futuro', false);
         return;
     }
+    // Reindirizza alla dashboard desktop
     window.location.href = `../HTML/Dashboard.html?id=${id}`;
 }
 

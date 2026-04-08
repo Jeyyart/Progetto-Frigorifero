@@ -1,11 +1,16 @@
+// ============================================================
+// FILE: scriptRegistro.js
+// ============================================================
+// Gestisce login e registrazione utenti, con validazione e chiamate API.
+
 // VARIABILE GLOBALE: true = modalità login, false = modalità registrazione
 let isLoginMode = true;
-let successTimeout = null;
+let successTimeout = null; // per il timeout del messaggio di successo
 
 // URL base dell'API (stesso backend usato in register.php e access.php)
 const API_BASE = "https://phpusersbytolentino-production.up.railway.app";
 
-// Riferimenti agli elementi HTML
+// Riferimenti agli elementi HTML (per manipolarli facilmente)
 const registroButton = document.getElementById('registroButton');
 const registroToggleLink = document.getElementById('registroToggleLink');
 const registroConfirmGroup = document.getElementById('registroConfirmPasswordGroup');
@@ -27,6 +32,7 @@ function hideError() {
     errorEl.style.display = 'none';
 }
 
+// Mostra un messaggio di successo (stile verde) per 4 secondi
 function showSuccess(message) {
     if (successTimeout) clearTimeout(successTimeout);
     const errorEl = document.getElementById('errorContainer');
@@ -46,17 +52,19 @@ function showSuccess(message) {
 
 // ========== FUNZIONI DI VALIDAZIONE ==========
 function validateEmail(email) {
+    // Regex per email: deve finire con .com, .it, .net, .org, .eu
     return /^[^\s@]+@[^\s@]+\.(com|it|net|org|eu)$/i.test(email);
 }
 
 function validatePassword(password) {
+    // Almeno 8 caratteri, almeno una maiuscola, almeno un numero
     return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
 }
 
 // ========== SWITCH TRA LOGIN E REGISTRAZIONE ==========
 registroToggleLink.addEventListener('click', () => {
     hideError();
-    isLoginMode = !isLoginMode;
+    isLoginMode = !isLoginMode; // inverte la modalità
 
     if (isLoginMode) {
         // MODALITÀ LOGIN
@@ -78,13 +86,14 @@ registroToggleLink.addEventListener('click', () => {
         nicknameGroup.style.display = 'block';
         emailGroup.style.display = 'block';
         loginIdentifierGroup.style.display = 'none';
-        // Assicura l'ordine visivo: nickname sopra email
+        // Assicura l'ordine visivo: nickname sopra email (riordina nel DOM)
         nicknameGroup.parentNode.insertBefore(nicknameGroup, emailGroup);
     }
 });
 
 // ========== REGISTRAZIONE TRAMITE API ==========
 async function registerUser(nickname, email, password) {
+    // Crea un corpo della richiesta in formato application/x-www-form-urlencoded
     const formData = new URLSearchParams();
     formData.append("nickname", nickname);
     formData.append("email", email);
@@ -96,7 +105,7 @@ async function registerUser(nickname, email, password) {
         body: formData.toString()
     });
 
-    const text = await response.text();
+    const text = await response.text(); // il server restituisce testo semplice
     if (text.includes("Registrazione completata")) {
         return { success: true, message: "✅ Account creato con successo!" };
     } else {
@@ -107,7 +116,7 @@ async function registerUser(nickname, email, password) {
 // ========== LOGIN TRAMITE API (atteso JSON) ==========
 async function loginUser(identifier, password) {
     const formData = new URLSearchParams();
-    formData.append("email", identifier);
+    formData.append("email", identifier); // l'API si aspetta il campo 'email'
     formData.append("password", password);
 
     const response = await fetch(`${API_BASE}/access.php`, {
@@ -116,7 +125,7 @@ async function loginUser(identifier, password) {
         body: formData.toString()
     });
 
-    const data = await response.json();
+    const data = await response.json(); // il server restituisce JSON
     if (data.success) {
         return {
             success: true,
@@ -181,27 +190,29 @@ registroButton.addEventListener('click', async () => {
     const identifier = document.getElementById('identifier').value.trim();
 
     // Login speciale per amministratore hardcoded (non va all'API)
- if (identifier === '#admin' && password === 'admin123') {
-    localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
-    redirectAfterLogin();
-}
+    if (identifier === '#admin' && password === 'admin123') {
+        localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
+        redirectAfterLogin();
+        return; // esce per evitare la chiamata API
+    }
 
     const result = await loginUser(identifier, password);
-   if (result.success) {
-    localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: false }));
-    redirectAfterLogin();
-} else {
+    if (result.success) {
+        localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: result.isAdmin }));
+        redirectAfterLogin();
+    } else {
         showError(result.message || '❌ Credenziali errate');
     }
 });
 
 // ========== SUPPORTO TASTO "INVIO" ==========
+// Permette di inviare il form premendo Enter in qualsiasi campo input
 const allInputs = document.querySelectorAll('input');
 allInputs.forEach(input => {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault();
-            registroButton.click();
+            e.preventDefault(); // evita comportamenti indesiderati
+            registroButton.click(); // simula il click sul pulsante principale
         }
     });
 });

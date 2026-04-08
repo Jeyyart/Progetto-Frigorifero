@@ -1,3 +1,9 @@
+// ============================================================
+// FILE: scriptConnettiMobile.js
+// ============================================================
+// Pagina di connessione per mobile: permette di collegare un frigorifero tramite ID manuale
+// o reindirizzando allo scanner QR.
+
 // Variabile che conterrà l'oggetto dell'utente corrente
 let currentUser = null;
 
@@ -62,8 +68,9 @@ function connectDevice() {
         showError('❌ ID non valido. Deve iniziare con "FRG-" (es. FRG-987654)');
         return;
     }
+    // Solo due ID sono supportati nella demo
     if (id !== 'FRG-001' && id !== 'FRG-TEMPLATE') {
-        // Mostra messaggio temporaneo verde
+        // Mostra messaggio temporaneo verde (non errore, ma informativo)
         const errorEl = document.getElementById('errorContainer');
         errorEl.style.backgroundColor = 'rgba(34, 197, 94, 0.15)';
         errorEl.style.borderColor = '#22c55e';
@@ -73,6 +80,7 @@ function connectDevice() {
         setTimeout(() => errorEl.style.display = 'none', 4000);
         return;
     }
+    // Reindirizza alla dashboard mobile con l'ID scelto
     window.location.href = `../HTML/DashboardMobile.html?id=${encodeURIComponent(id)}`;
 }
 

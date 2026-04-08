@@ -1,81 +1,123 @@
+/* ============================================================
+   FILE: styleDashboard.css
+   ============================================================ */
+
 /* VARIABILI CSS per il tema scuro (impostazione predefinita) */
 :root {
-    --bg: #0f0f0f;          /* sfondo principale della pagina */
-    --card: #1a1a1a;        /* sfondo delle card (metriche, grafico, timeline) */
-    --accent: #22c55e;      /* verde per accenti, pulsanti, valori */
-    --text: #f0f0f0;        /* colore del testo principale */
-    --muted: #aaaaaa;       /* colore per testi secondari */
+    /* --bg: colore di sfondo principale della pagina (nero profondo) */
+    --bg: #0f0f0f;
+    /* --card: colore di sfondo delle card (metriche, grafico, timeline) - grigio scuro */
+    --card: #1a1a1a;
+    /* --accent: colore verde per accenti, pulsanti, valori importanti */
+    --accent: #22c55e;
+    /* --text: colore del testo principale (bianco/grigio chiaro) */
+    --text: #f0f0f0;
+    /* --muted: colore per testi secondari (grigio medio) */
+    --muted: #aaaaaa;
 }
 
 /* VARIABILI per il tema chiaro: sovrascritte quando data-theme="light" sull'elemento <html> */
 [data-theme="light"] {
+    /* Sfondo chiaro (grigio molto chiaro) */
     --bg: #f8fafc;
+    /* Card bianca */
     --card: #ffffff;
+    /* Accento verde (stesso colore per coerenza) */
     --accent: #22c55e;
+    /* Testo scuro (quasi nero) */
     --text: #111827;
+    /* Testo secondario grigio bluastro */
     --muted: #64748b;
 }
 
 /* Reset CSS: toglie margini e padding predefiniti, e usa il box-sizing border-box */
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+    margin: 0;          /* rimuove margine esterno */
+    padding: 0;         /* rimuove padding interno */
+    box-sizing: border-box; /* larghezza/altezza includono bordi e padding */
+}
 
 /* Stile base del body: font, sfondo dinamico, nasconde lo scroll (la pagina scrolla solo nella parte destra) */
 body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    overflow: hidden;        /* evita doppio scroll, perché il contenuto destro scrolla indipendentemente */
-    height: 100vh;
+    font-family: 'Inter', sans-serif;   /* font moderno, con fallback generico */
+    background: var(--bg);              /* sfondo che cambia con il tema */
+    color: var(--text);                 /* testo che cambia con il tema */
+    overflow: hidden;                   /* evita doppio scroll, perché il contenuto destro scrolla indipendentemente */
+    height: 100vh;                      /* altezza pari alla finestra del browser */
 }
 
 /* Contenitore principale: flex row affianca modello 3D e dashboard */
-.containerSito { display: flex; height: 100vh; }
+.containerSito {
+    display: flex;      /* abilita flexbox */
+    height: 100vh;      /* occupa tutta l'altezza */
+}
 
 /* AREA SINISTRA: modello 3D (38% della larghezza) */
 .modello3D {
-    width: 38%;
-    background: #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+    width: 38%;                         /* occupa il 38% della larghezza del contenitore */
+    background: #111;                   /* sfondo scuro di base (non usa variabile perché specifico) */
+    display: flex;                      /* flex per centrare il canvas */
+    align-items: center;                /* centra verticalmente */
+    justify-content: center;            /* centra orizzontalmente */
+    position: relative;                 /* posizionamento relativo per contenere .model-hint assoluto */
 }
-[data-theme="light"] .modello3D { background: #e2e8f0; }
 
-/* Canvas dove Three.js disegna il modello */
-#three-canvas { width: 100%; height: 100%; }
+/* Tema chiaro: sfondo dell'area 3D diventa grigio chiaro */
+[data-theme="light"] .modello3D {
+    background: #e2e8f0;
+}
 
-/* Suggerimento interattivo in basso al modello */
+/* Canvas dove Three.js disegna il modello: larghezza e altezza piene del contenitore */
+#three-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Suggerimento interattivo in basso al modello: posizionato in modo assoluto rispetto a .modello3D */
 .model-hint {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
-    color: var(--accent);
-    padding: 8px 18px;
-    border-radius: 30px;
-    font-size: 13px;
+    position: absolute;                 /* posizionamento assoluto all'interno del contenitore relativo */
+    bottom: 25px;                      /* distanza dal bordo inferiore */
+    left: 50%;                         /* partenza dal centro orizzontale */
+    transform: translateX(-50%);       /* sposta indietro del 50% della sua larghezza per centrarlo */
+    background: rgba(0,0,0,0.8);       /* sfondo nero semitrasparente */
+    color: var(--accent);              /* testo verde */
+    padding: 8px 18px;                 /* spazio interno verticale e orizzontale */
+    border-radius: 30px;               /* angoli molto arrotondati (pillola) */
+    font-size: 13px;                   /* dimensione del testo */
 }
 
 /* AREA DESTRA: contenuto dashboard (62% della larghezza, scrollabile) */
 .DashboardContent {
-    width: 62%;
-    padding: 35px 40px 40px;
-    overflow-y: auto;
-    background: var(--bg);
+    width: 62%;                         /* occupa il resto della larghezza */
+    padding: 35px 40px 40px;           /* padding: sopra, destra/sinistra, sotto */
+    overflow-y: auto;                  /* abilita scroll verticale se il contenuto supera l'altezza */
+    background: var(--bg);             /* sfondo dinamico con tema */
 }
 
 /* ========== HEADER (logo, pulsanti, utente) ========== */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    display: flex;                      /* layout flessibile orizzontale */
+    justify-content: space-between;     /* spazio tra sinistra e destra */
+    align-items: center;                /* allinea verticalmente al centro */
+    margin-bottom: 20px;                /* spazio sotto l'header */
 }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.logo-placeholder { display: flex; align-items: center; gap: 12px; }
-.logo-img { width: 58px; height: 58px; }
+
+.header-left {
+    display: flex;                      /* orizzontale */
+    align-items: center;
+    gap: 14px;                          /* spazio tra gli elementi figli */
+}
+
+.logo-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-img {
+    width: 58px;
+    height: 58px;
+}
 
 .header-right {
     display: flex;
@@ -85,28 +127,32 @@ body {
 
 /* Pulsante cambio tema (stesso stile delle altre pagine) */
 .theme-toggle-global {
-    background: #1a1a1a;
-    border: 2px solid #444;
-    color: #fff;
+    background: #1a1a1a;               /* sfondo scuro */
+    border: 2px solid #444;            /* bordo grigio scuro */
+    color: #fff;                       /* icona bianca */
     width: 56px;
     height: 56px;
-    border-radius: 14px;
-    font-size: 28px;
+    border-radius: 14px;               /* angoli arrotondati */
+    font-size: 28px;                   /* dimensione dell'emoji */
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
+    cursor: pointer;                   /* mano al passaggio del mouse */
+    transition: background 0.2s;       /* animazione fluida per il cambio sfondo */
 }
-.theme-toggle-global:hover { background: #22c55e; color: #111; }
+
+.theme-toggle-global:hover {
+    background: #22c55e;               /* diventa verde al passaggio del mouse */
+    color: #111;                       /* icona diventa scura */
+}
 
 /* Pulsante logout (rosso) */
 .logout-btn {
-    background: #e74c3c;
+    background: #e74c3c;               /* rosso */
     color: white;
     border: none;
     padding: 12px 32px;
-    border-radius: 9999px;
+    border-radius: 9999px;             /* completamente arrotondato (pillola) */
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
@@ -114,8 +160,8 @@ body {
 
 /* Badge nome utente (verde) */
 .user-display {
-    background: #22c55e;
-    color: #111;
+    background: #22c55e;               /* verde */
+    color: #111;                       /* testo scuro */
     padding: 10px 24px;
     border-radius: 9999px;
     display: flex;
@@ -135,36 +181,47 @@ body {
     font-weight: 700;
     display: inline-flex;
     align-items: center;
-    white-space: nowrap;
+    white-space: nowrap;               /* impedisce al testo di andare a capo */
 }
 
 /* Messaggio di benvenuto */
-.greeting { 
-    font-size: 22px; 
-    font-weight: 700; 
-    color: var(--text); 
-    margin: 10px 0 30px;
+.greeting {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 10px 0 30px;               /* margine superiore 10, inferiore 30 */
 }
 
 /* Griglia delle tre metriche (temperatura, umidità, stato porta) */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr); /* tre colonne uguali */
+    gap: 20px;                             /* spazio tra le card */
     margin-bottom: 30px;
 }
 
 /* Singola card metrica */
 .metric-card {
-    background: var(--card);
+    background: var(--card);           /* sfondo dinamico (cambia con tema) */
     border-radius: 20px;
     padding: 28px 20px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); /* ombra per profondità */
 }
 
-.metric-value { font-size: 52px; font-weight: 700; letter-spacing: -2px; }
-.metric-unit { font-size: 26px; font-weight: 700; color: var(--accent); vertical-align: super; margin-left: 4px; }
+.metric-value {
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: -2px;              /* riduce spazio tra caratteri per un aspetto compatto */
+}
+
+.metric-unit {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent);              /* verde */
+    vertical-align: super;             /* posiziona l'unità in alto rispetto al numero */
+    margin-left: 4px;
+}
 
 /* SEZIONE GRAFICO */
 .chart-section, .timeline-section {
@@ -195,7 +252,7 @@ body {
 
 /* Pulsanti per cambiare tipo di grafico (Temperatura/Umidità) */
 .chart-tabs button {
-    background: var(--accent);
+    background: var(--accent);         /* verde */
     color: #111;
     border: none;
     padding: 14px 32px;
@@ -203,14 +260,17 @@ body {
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s;              /* transizione su tutte le proprietà */
 }
+
 .chart-tabs button:hover {
-    background: #16a34a;
-    transform: translateY(-2px);
+    background: #16a34a;               /* verde più scuro */
+    transform: translateY(-2px);       /* solleva leggermente il pulsante */
 }
+
+/* Pulsante attivo (quello selezionato) */
 .chart-tabs button.active {
-    box-shadow: 0 0 0 4px rgba(34,197,94,0.4);
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.4); /* alone verde intorno */
 }
 
 /* SEZIONE TIMELINE (aperture porta) */
@@ -224,7 +284,10 @@ body {
     flex-direction: column;
     justify-content: center;
 }
-[data-theme="light"] .timeline-bar { background: #e2e8f0; }
+
+[data-theme="light"] .timeline-bar {
+    background: #e2e8f0;
+}
 
 .timeline-hours {
     display: flex;
@@ -234,13 +297,17 @@ body {
     color: var(--muted);
     margin-bottom: 8px;
 }
+
 .timeline-progress {
     height: 12px;
     background: #333;
     border-radius: 9999px;
     position: relative;
 }
-[data-theme="light"] .timeline-progress { background: #cbd5e1; }
+
+[data-theme="light"] .timeline-progress {
+    background: #cbd5e1;
+}
 
 .timeline-message {
     position: absolute;
@@ -259,16 +326,19 @@ body {
     border-radius: 12px;
     font-size: 14px;
 }
+
 .timeline-event {
     padding: 6px 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
+
 .timeline-empty {
     text-align: center;
     color: var(--muted);
     padding: 12px;
 }
 
+/* Stile per il menu a tendina admin */
 .admin-select {
     background: var(--card);
     color: var(--text);
@@ -281,14 +351,17 @@ body {
     transition: all 0.2s;
     margin-left: 15px;
 }
+
 .admin-select:hover {
-    border-color: var(--accent);
+    border-color: var(--accent);       /* bordo verde al passaggio */
 }
+
 .admin-select:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
 }
+
 [data-theme="light"] .admin-select {
     background: #ffffff;
     border-color: #cbd5e1;
@@ -297,8 +370,17 @@ body {
 
 /* RESPONSIVE: su schermi medi, passa a colonna (modello sopra, dashboard sotto) */
 @media (max-width: 1024px) {
-    .metrics-grid { grid-template-columns: 1fr; }
-    .containerSito { flex-direction: column; }
-    .modello3D { width: 100%; height: 40vh; }
-    .DashboardContent { width: 100%; }
+    .metrics-grid {
+        grid-template-columns: 1fr;    /* una sola colonna per le metriche */
+    }
+    .containerSito {
+        flex-direction: column;        /* impila modello sopra e dashboard sotto */
+    }
+    .modello3D {
+        width: 100%;
+        height: 40vh;                  /* altezza del modello ridotta a 40% della finestra */
+    }
+    .DashboardContent {
+        width: 100%;
+    }
 }

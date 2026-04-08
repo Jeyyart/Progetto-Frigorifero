@@ -1,26 +1,31 @@
 <!DOCTYPE html>
+<!--
+  SELEZIONE DISPOSITIVO (SelezioneDispositivo.html)
+  Dopo il login, l'utente sceglie quale dispositivo (frigorifero) vuole monitorare.
+  Attualmente solo il frigorifero è attivo, gli altri sono "prossimamente".
+  Include header con logo, tema, logout e nome utente.
+-->
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXORA Smart Fridge - Scegli Dispositivo</title>
-    <!-- Foglio di stile per il design della pagina di selezione dispositivo -->
+    <!-- Foglio di stile specifico per la selezione dispositivo -->
     <link rel="stylesheet" href="../CSS/styleSelezione.css">
-    <!-- Font moderno da Google Fonts -->
+    <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Script JavaScript (gestisce utente, tema, selezione dispositivo, logout) -->
+    <!-- Script JavaScript per la selezione, tema, logout -->
     <script src="../JS/scriptSelezione.js" defer></script>
 </head>
 <body>
-    <!-- CONTENITORE PRINCIPALE: usa flexbox per organizzare header e contenuto -->
+    <!-- Contenitore principale della pagina -->
     <div class="containerSito">
-        <!-- HEADER FISSO IN ALTO: logo, pulsante tema, logout, nome utente -->
+        <!-- Header fisso in alto: logo, pulsante tema, logout, nome utente -->
         <div class="header">
             <div class="header-left">
                 <div class="logo-placeholder">
-                    <!-- Logo NEXORA -->
                     <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
                     <h1>NEXORA Smart Fridge</h1>
                 </div>
@@ -28,36 +33,48 @@
             <div class="header-right">
                 <!-- Pulsante per cambiare tema (scuro/chiaro) -->
                 <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
-                <!-- Pulsante di logout: chiama la funzione logout() definita in scriptSelezione.js -->
+                <!--
+                  Pulsante di logout: chiama la funzione JavaScript globale "logout()"
+                  che reindirizza alla pagina di login.
+                -->
                 <button onclick="logout()" class="logout-btn">ESCI</button>
-                <!-- Contenitore per mostrare il nome utente corrente (con icona) -->
+                <!-- Badge con icona utente e nome (popolato dallo script) -->
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
 
-        <!-- CONTENUTO CENTRALE: messaggio di benvenuto e griglia di dispositivi -->
+        <!-- Contenuto centrale -->
         <div class="main-content">
             <!-- Messaggio di benvenuto personalizzato con il nome dell'utente -->
             <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, scegli il dispositivo</p>
-            
-            <!-- Griglia di card: ogni card rappresenta un dispositivo (Frigo, Forno, Microonde, Tostapane) -->
+
+            <!-- Griglia di card che rappresentano i dispositivi disponibili -->
             <div class="devices-grid">
-                <!-- Al click su una card, viene chiamata selectDevice() (definita in JS) -->
+                <!--
+                  Card del frigorifero: attiva e cliccabile.
+                  Al click viene chiamata la funzione "selectDevice()" definita nel file JS.
+                -->
                 <div class="device-card active" onclick="selectDevice()">
                     <div class="device-icon">❄️</div>
                     <h2>Frigorifero</h2>
                     <p class="device-status available">✅ Disponibile ora</p>
                 </div>
+                <!--
+                  Card per il forno: classe "coming-soon" indica che non è ancora disponibile.
+                  Non ha onclick, quindi non è interattiva.
+                -->
                 <div class="device-card coming-soon">
                     <div class="device-icon">🍳</div>
                     <h2>Forno</h2>
                     <p class="device-status soon">🔒 Prossimamente</p>
                 </div>
+                <!-- Card microonde (prossimamente) -->
                 <div class="device-card coming-soon">
                     <div class="device-icon">📻</div>
                     <h2>Microonde</h2>
                     <p class="device-status soon">🔒 Prossimamente</p>
                 </div>
+                <!-- Card tostapane (prossimamente) -->
                 <div class="device-card coming-soon">
                     <div class="device-icon">🍞</div>
                     <h2>Tostapane</h2>

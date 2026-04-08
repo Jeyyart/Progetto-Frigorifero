@@ -1,14 +1,29 @@
+// ============================================================
+// FILE: scriptDashboard.js (versione desktop)
+// ============================================================
+// Dashboard per schermi grandi (desktop/tablet). Gestisce:
+// - Modello 3D interattivo del frigorifero (aperto/chiuso)
+// - Metriche in tempo reale (temperatura, umidità, stato porta)
+// - Grafico storico (Chart.js) con swipe e tab
+// - Timeline aperture porta
+// - Pannello admin per cambiare ID frigorifero
+// - Tema chiaro/scuro e logout
+
 console.log('✅ scriptDashboard.js CARICATO - con verifica GET diretta');
 
-let chart = null;
-let currentChartType = 'temperature';
-let readingsHistory = [];
-let modelGroup = null, modelClosed = null, modelOpen = null, currentModel = null;
-let scene = null, camera = null, renderer = null;
-let rotationY = 0, autoRotateSpeed = 0.002;
-let currentUser = null, currentDeviceId = null;
-let modelsReady = false, pendingDoorState = false;
+// ---------- VARIABILI GLOBALI ----------
+let chart = null;               // Istanza del grafico Chart.js
+let currentChartType = 'temperature'; // 'temperature' o 'humidity'
+let readingsHistory = [];       // Array storico delle letture
+let modelGroup = null, modelClosed = null, modelOpen = null, currentModel = null; // Modelli 3D
+let scene = null, camera = null, renderer = null; // Oggetti Three.js
+let rotationY = 0;              // Rotazione attuale del modello (in radianti)
+let autoRotateSpeed = 0.002;   // Velocità di rotazione automatica
+let currentUser = null, currentDeviceId = null; // Utente loggato e ID frigorifero
+let modelsReady = false;        // Flag: modelli 3D caricati?
+let pendingDoorState = false;   // Stato porta in attesa (se modelli non pronti)
 
+// ---------- OTTIENI ID FRIGORIFERO DALL'URL ----------
 const urlParams = new URLSearchParams(window.location.search);
 currentDeviceId = urlParams.get('id');
 if (!currentDeviceId) {
@@ -16,19 +31,22 @@ if (!currentDeviceId) {
   currentDeviceId = "FRG-001";
 }
 
+// URL delle API (backend Railway)
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const VERIFICA_URL = 'https://phpusersbytolentino-production.up.railway.app/verifica-associazione.php';
 
 // ========== VERIFICA AUTORIZZAZIONE (GET diretta) ==========
+// Controlla se l'utente loggato è autorizzato a vedere i dati di questo frigorifero
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
         window.location.href = '../HTML/registro.html';
         return false;
     }
-    if (user.isAdmin) return true;
+    if (user.isAdmin) return true; // Gli admin vedono tutto
 
     try {
+        // Chiamata GET al server di verifica con userId e fridgeId in query string
         const url = `${VERIFICA_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url);
         const data = await response.json();
@@ -47,10 +65,14 @@ async function checkAuthorization() {
     }
 }
 
-// ========== TUTTE LE ALTRE FUNZIONI (invariate) ==========
+// ========== FUNZIONI DI UTILITÀ ==========
+// Formatta un oggetto Date in "HH:MM"
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
+
+// Converte una stringa timestamp in oggetto Date
 function parseTimestamp(ts) { return new Date(ts); }
 
+// Processa le letture grezze: normalizza nomi campi, aggiunge +2 ore per fuso orario
 function processReadings(readings) {
   return readings.map(r => {
     let date = parseTimestamp(r.timestame || r.timestamp);
@@ -64,16 +86,19 @@ function processReadings(readings) {
   });
 }
 
+// Arrotonda a 1 decimale e toglie ".0" se intero
 function formatValueWithDecimal(value) {
   const rounded = Math.round(value * 10) / 10;
   const str = rounded.toFixed(1);
   return str.endsWith('.0') ? Math.round(rounded).toString() : str;
 }
 
+// Restituisce oggetto con temperatura e umidità formattate
 function formatTemperatureHumidity(temp, hum) {
   return { temp: formatValueWithDecimal(temp), hum: formatValueWithDecimal(hum) };
 }
 
+// Trova i cambiamenti di stato della porta (aperta/chiusa)
 function getDoorStateChanges(readings) {
   const changes = [];
   for (let i = 1; i < readings.length; i++) {
@@ -88,6 +113,7 @@ function getDoorStateChanges(readings) {
   return changes;
 }
 
+// Calcola da quanto tempo la porta è nello stato attuale
 function getLastStateDuration(readings, currentState) {
   if (!readings.length) return 'dati non disponibili';
   const changes = getDoorStateChanges(readings);
@@ -102,6 +128,7 @@ function getLastStateDuration(readings, currentState) {
   return duration;
 }
 
+// Restituisce gli eventi di apertura/chiusura della porta avvenuti oggi
 function getTodayEvents(readings) {
   const changes = getDoorStateChanges(readings);
   const today = new Date(); today.setHours(0,0,0,0);
@@ -110,10 +137,13 @@ function getTodayEvents(readings) {
                 .map(ev => ({ time: ev.timestamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), action: ev.changedTo }));
 }
 
+// ========== AGGIORNAMENTO UI ==========
+// Aggiorna le card metriche (temperatura, umidità, stato porta)
 function updateMetrics(readings) {
   if (!readings.length) return;
   const latest = readings[readings.length-1];
   const isOpen = latest.doorOpen;
+  // Se i modelli 3D sono pronti, cambia modello (aperto/chiuso)
   if (modelsReady) switchModel(isOpen);
   else pendingDoorState = isOpen;
   const { temp, hum } = formatTemperatureHumidity(latest.temperature, latest.humidity);
@@ -124,6 +154,7 @@ function updateMetrics(readings) {
   document.getElementById('doorTime').textContent = `${isOpen ? 'Aperta' : 'Chiusa'} da ${getLastStateDuration(readings, isOpen)}`;
 }
 
+// Aggiorna il grafico con i dati correnti
 function updateChart() {
   if (!chart) return;
   const labels = readingsHistory.map(r => formatTime(r.timestamp));
@@ -137,6 +168,7 @@ function updateChart() {
   chart.update('none');
 }
 
+// Aggiorna la timeline delle aperture
 function updateTimeline() {
   const events = getTodayEvents(readingsHistory);
   const timelineContainer = document.getElementById('timelineEvents');
@@ -145,6 +177,8 @@ function updateTimeline() {
   timelineContainer.innerHTML = `<div class="timeline-events-list">${events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('')}</div>`;
 }
 
+// ========== MOCK DINAMICO (FALLBACK) ==========
+// Genera dati fittizi in caso di errore API
 function generateDynamicMock(deviceId) {
     console.warn(`⚠️ Utilizzo fallback dinamico per ${deviceId}`);
     const now = Date.now();
@@ -161,6 +195,7 @@ function generateDynamicMock(deviceId) {
     ];
 }
 
+// Recupera i dati dall'API (o fallback) e aggiorna tutto
 async function fetchAndUpdate() {
     console.log(`🔄 Richiesta API per device: ${currentDeviceId}`);
     try {
@@ -181,12 +216,15 @@ async function fetchAndUpdate() {
     updateTimeline();
 }
 
+// ========== MODELLO 3D ==========
+// Centra il modello nella scena (posizionamento corretto)
 function centerModel(model) {
   const box = new THREE.Box3().setFromObject(model);
   const center = box.getCenter(new THREE.Vector3());
   model.position.set(-center.x, -center.y, -center.z);
 }
 
+// Cambia modello visualizzato (aperto/chiuso)
 function switchModel(isOpen) {
   if (!modelsReady) return;
   const targetModel = isOpen ? modelOpen : modelClosed;
@@ -195,6 +233,7 @@ function switchModel(isOpen) {
   if (targetModel) { modelGroup.add(targetModel); currentModel = targetModel; }
 }
 
+// Inizializza la scena 3D con Three.js e carica i modelli GLTF
 function init3D() {
   const canvas = document.getElementById('three-canvas');
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -206,6 +245,7 @@ function init3D() {
   camera = new THREE.PerspectiveCamera(50, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
   camera.position.set(0,1.8,15.0);
   camera.lookAt(0,0,0);
+  // Luci
   const ambient = new THREE.AmbientLight(0xffffff,0.8);
   scene.add(ambient);
   const dirLight = new THREE.DirectionalLight(0xffffff,1.2);
@@ -214,21 +254,30 @@ function init3D() {
   modelGroup = new THREE.Group();
   scene.add(modelGroup);
   const loader = new THREE.GLTFLoader();
+  // Carica modello chiuso
   loader.load('../BlenderModels/FRIGO-CHIUSO.glb', gltf => { modelClosed = gltf.scene; modelClosed.scale.set(1.8,1.8,1.8); centerModel(modelClosed); checkModelsReady(); });
+  // Carica modello aperto
   loader.load('../BlenderModels/FRIGO-APERTO.glb', gltf => { modelOpen = gltf.scene; modelOpen.scale.set(1.8,1.8,1.8); centerModel(modelOpen); checkModelsReady(); });
+  // Controlla quando entrambi sono caricati
   function checkModelsReady() { if(modelClosed && modelOpen && !modelsReady){ modelsReady=true; switchModel(pendingDoorState); } }
+  // Interazioni mouse per ruotare il modello
   let isDragging=false, prevX=0;
   canvas.addEventListener('mousedown', e => { isDragging=true; prevX=e.clientX; });
   window.addEventListener('mouseup', () => isDragging=false);
   canvas.addEventListener('mousemove', e => { if(!isDragging) return; rotationY += (e.clientX-prevX)*0.008; prevX=e.clientX; });
+  // Animazione: rotazione automatica
   function animate(){ requestAnimationFrame(animate); rotationY += autoRotateSpeed; if(modelGroup) modelGroup.rotation.y = rotationY; renderer.render(scene,camera); }
   animate();
+  // Ridimensionamento finestra
   window.addEventListener('resize', () => { camera.aspect = canvas.clientWidth/canvas.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(canvas.clientWidth, canvas.clientHeight); });
+  // Timeout di sicurezza: se i modelli non si caricano entro 5 secondi, forza stato chiuso
   setTimeout(() => {
     if (!modelsReady) { console.warn('⚠️ Modelli 3D non caricati, uso default'); modelsReady=true; switchModel(pendingDoorState); }
   }, 5000);
 }
 
+// ========== GRAFICO ==========
+// Inizializza Chart.js e osserva i cambiamenti di tema per aggiornare i colori
 function initChart() {
   const ctx = document.getElementById('dataChart').getContext('2d');
   chart = new Chart(ctx, {
@@ -237,6 +286,7 @@ function initChart() {
       scales:{ y:{ grid:{ color:'#333' }, ticks:{ color:'#ccc' } }, x:{ grid:{ color:'#333' }, ticks:{ color:'#ccc' } } }
     }
   });
+  // MutationObserver per cambiare colori del grafico al cambio tema
   const observer = new MutationObserver(() => {
     if(!chart) return;
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -250,6 +300,7 @@ function initChart() {
   observer.observe(document.documentElement, { attributes:true });
 }
 
+// Listener per i tab (Temperatura/Umidità)
 function addTabListeners() {
   document.querySelectorAll('.chart-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -261,6 +312,7 @@ function addTabListeners() {
   });
 }
 
+// Swipe sull'area del grafico per cambiare tipo (utile su touch screen)
 function addSwipeListener() {
   const swipeArea = document.getElementById('chartSwipeArea');
   let startX = 0;
@@ -274,23 +326,28 @@ function addSwipeListener() {
   });
 }
 
+// ========== INIZIALIZZAZIONE PRINCIPALE ==========
 async function initAll() {
+    // Verifica autorizzazione
     const authorized = await checkAuthorization();
     if (!authorized) return;
 
+    // Carica utente
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     const name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
+    // Inizializza componenti
     initChart();
     addTabListeners();
     addSwipeListener();
     init3D();
     fetchAndUpdate();
-    setInterval(fetchAndUpdate, 30000);
+    setInterval(fetchAndUpdate, 30000); // aggiornamento ogni 30 secondi
 
+    // Tema
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -302,11 +359,13 @@ async function initAll() {
         themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
     });
 
+    // Logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('currentUser');
         window.location.href = '../HTML/registro.html';
     });
 
+    // Pannello admin (solo per utenti admin)
     if (currentUser.isAdmin) {
         document.getElementById('adminPanel').style.display = 'block';
         const selectEl = document.getElementById('adminIdSelect');
@@ -317,5 +376,8 @@ async function initAll() {
     }
 }
 
+// Funzione globale logout (richiamabile anche da onclick nell'HTML)
 window.logout = function() { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; };
+
+// Avvio al caricamento della pagina
 window.onload = initAll;

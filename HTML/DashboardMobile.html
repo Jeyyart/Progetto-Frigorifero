@@ -1,77 +1,155 @@
 <!DOCTYPE html>
+<!--
+  DASHBOARD MOBILE (DashboardMobile.html)
+  Questa pagina è la versione ottimizzata per smartphone della dashboard di controllo del frigorifero intelligente NEXORA.
+  Viene richiesto l'orientamento orizzontale (landscape) per una migliore fruizione dei dati.
+  Contiene: modello 3D interattivo del frigorifero, metriche in tempo reale (temperatura, umidità, stato porta),
+  grafico storico (temperatura/umidità) e timeline delle aperture della porta.
+-->
 <html lang="it">
 <head>
+    <!-- Specifica la codifica dei caratteri: supporto completo a lettere accentate e simboli -->
     <meta charset="UTF-8">
+    <!--
+      viewport: controlla il layout su dispositivi mobili.
+      width=device-width -> larghezza uguale alla larghezza dello schermo.
+      initial-scale=1.0 -> zoom iniziale normale.
+      user-scalable=no -> impedisce all'utente di zoomare (tipico per app).
+      viewport-fit=cover -> permette di estendere il contenuto anche nelle aree con notch/barre.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Mobile</title>
+    <!-- Collegamento al foglio di stile CSS specifico per la versione mobile della dashboard -->
     <link rel="stylesheet" href="../CSS/styleDashboardMobile.css">
+    <!-- Font "Inter" di Google Fonts: rende il testo moderno e leggibile -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icona che appare nella scheda del browser (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
+    <!-- Libreria Chart.js per disegnare grafici (temperatura e umidità) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Libreria Three.js per la grafica 3D (modello del frigorifero) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <!-- Plugin GLTFLoader per Three.js: permette di caricare modelli 3D nel formato .gltf -->
     <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- Script JavaScript principale per la dashboard mobile (gestisce dati, grafico, interazione 3D) -->
     <script src="../JS/scriptDashboardMobile.js" defer></script>
+    <!-- defer: lo script viene eseguito solo dopo che l'intera pagina è stata caricata -->
 </head>
 <body>
+    <!-- Contenitore principale dell'interfaccia mobile -->
     <div class="mobile-dashboard">
+        <!--
+          DIV di avviso orientamento: appare se il telefono è in verticale.
+          Spinge l'utente a ruotare il dispositivo in orizzontale.
+        -->
         <div id="orientationWarning" class="orientation-warning">
             ⚠️ Ruota il telefono in orizzontale per usare la dashboard
         </div>
+
+        <!--
+          Sezione che diventa visibile solo quando il telefono è in orientamento orizzontale.
+          Contiene due colonne: la colonna del modello 3D e la colonna dei dati.
+        -->
         <div class="dashboard-landscape">
+            <!-- Colonna sinistra: visualizzazione 3D del frigorifero -->
             <div class="model-column">
+                <!-- Canvas (tela) dove Three.js disegnerà la scena 3D -->
                 <canvas id="three-canvas"></canvas>
+                <!-- Piccolo testo informativo per l'utente: spiega che può trascinare per ruotare -->
                 <div class="model-hint">🖱️ Trascina per ruotare</div>
             </div>
+
+            <!-- Colonna destra: tutti i dati e i controlli -->
             <div class="data-column">
+                <!-- Intestazione della dashboard mobile: logo, pulsante tema, logout, nome utente -->
                 <div class="header-mobile">
                     <div class="logo-mobile">
+                        <!-- Logo dell'azienda NEXORA -->
                         <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
-                        <h1>NEXORA</h1>
+                        <h1>NEXORA</h1> <!-- Titolo principale -->
                     </div>
                     <div class="header-actions">
+                        <!--
+                          Pulsante per cambiare tema (chiaro/scuro).
+                          L'ID "themeToggleBtn" viene utilizzato nel JavaScript per aggiungere l'evento di click.
+                        -->
                         <button id="themeToggleBtn" class="theme-toggle">☀️</button>
+                        <!-- Pulsante per uscire (logout). L'ID "logoutBtn" è gestito dallo script -->
                         <button id="logoutBtn" class="logout-btn">ESCI</button>
+                        <!-- Contenitore che mostra l'icona utente e il nome dell'utente loggato -->
                         <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
                     </div>
                 </div>
+                <!-- Messaggio di benvenuto personalizzato: "Ciao [nome utente], monitoraggio in tempo reale" -->
                 <p class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
 
-                <!-- Pannello admin (inizialmente nascosto) -->
+                <!--
+                  Pannello Admin (inizialmente nascosto). Viene mostrato solo se l'utente loggato ha privilegi di amministratore.
+                  Permette di selezionare un ID frigorifero diverso da monitorare.
+                -->
                 <div id="adminPanelMobile" style="display:none; margin-bottom:15px; text-align:center;">
                     <label style="font-weight:600; margin-right:8px;">🔑 Modalità Admin – Seleziona ID:</label>
+                    <!-- Select (menu a tendina) popolato dallo script con gli ID dei frigoriferi disponibili -->
                     <select id="adminIdSelectMobile" class="admin-select-mobile"></select>
                 </div>
 
+                <!--
+                  Div che mostra lo stato dell'API (connessione, ultimo aggiornamento).
+                  Viene aggiornato dinamicamente dallo script.
+                -->
                 <div id="apiStatus" style="margin-bottom: 10px; font-size: 12px; text-align: center; color: var(--accent);"></div>
+
+                <!-- Griglia delle tre metriche principali: temperatura, umidità, stato porta -->
                 <div class="metrics-grid">
+                    <!-- Card della temperatura -->
                     <div class="metric-card">
                         <div class="metric-label">TEMPERATURA</div>
-                        <div class="metric-value"><span id="tempValue">--</span> <span class="metric-unit">°C</span></div>
+                        <div class="metric-value">
+                            <span id="tempValue">--</span> <!-- Valore numerico inserito dinamicamente -->
+                            <span class="metric-unit">°C</span> <!-- Unità di misura -->
+                        </div>
                     </div>
+                    <!-- Card dell'umidità -->
                     <div class="metric-card">
                         <div class="metric-label">UMIDITÀ</div>
-                        <div class="metric-value"><span id="humidityValue">--</span> <span class="metric-unit">%</span></div>
+                        <div class="metric-value">
+                            <span id="humidityValue">--</span>
+                            <span class="metric-unit">%</span>
+                        </div>
                     </div>
+                    <!-- Card dello stato porta (con ID doorCard per eventuali stili particolari) -->
                     <div class="metric-card door" id="doorCard">
                         <div class="metric-label">STATO PORTA</div>
                         <div class="metric-value" id="doorStatus">--</div>
+                        <!-- Mostra l'orario dell'ultima apertura/variazione -->
                         <div class="metric-trend" id="doorTime"></div>
                     </div>
                 </div>
+
+                <!-- Sezione del grafico (storico) -->
                 <div class="chart-section">
                     <div class="chart-header">
+                        <!-- Titolo dinamico del grafico (cambia tra Temperatura e Umidità) -->
                         <div class="chart-title" id="chartTitle">Storico Temperatura</div>
+                        <!-- Pulsanti per cambiare il tipo di grafico -->
                         <div class="chart-tabs">
                             <button class="chart-tab active" data-type="temperature">Temperatura</button>
                             <button class="chart-tab" data-type="humidity">Umidità</button>
                         </div>
                     </div>
+                    <!--
+                      Contenitore del grafico. L'attributo id="chartSwipeArea" può essere usato per rilevare swipe.
+                      Al suo interno c'è il canvas dove Chart.js disegnerà il grafico.
+                    -->
                     <div class="chart-container" id="chartSwipeArea">
                         <canvas id="dataChart"></canvas>
                     </div>
                 </div>
+
+                <!-- Sezione timeline: elenco delle aperture della porta avvenute oggi -->
                 <div class="timeline-section">
                     <div class="timeline-title">Timeline Aperture Porta - Oggi</div>
+                    <!-- Div che verrà riempito dinamicamente dallo script con la lista degli eventi -->
                     <div id="timelineEvents" class="timeline-events"></div>
                 </div>
             </div>

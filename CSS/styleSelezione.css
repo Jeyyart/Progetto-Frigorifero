@@ -1,3 +1,7 @@
+/* ============================================================
+   FILE: styleSelezione.css
+   ============================================================ */
+
 /* VARIABILI CSS per il tema scuro (impostazione predefinita) */
 :root {
     --bg: #0f0f0f;          /* sfondo principale della pagina */
@@ -96,11 +100,13 @@ body {
     cursor: pointer;
     transition: 0.2s;
 }
+
 .theme-toggle-global:hover {
     background: var(--accent);
     color: #111;
 }
-/* Stile per tema chiaro */
+
+/* Stile per tema chiaro del pulsante */
 [data-theme="light"] .theme-toggle-global {
     background: #e2e8f0;
     border-color: #cbd5e1;
@@ -171,7 +177,7 @@ body {
     border-radius: 24px;
     padding: 30px 20px;
     text-align: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* animazione morbida */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* animazione morbida (ease-out) */
     cursor: pointer;
     min-height: 260px;
     display: flex;
@@ -192,24 +198,27 @@ body {
     box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.3);
 }
 
+/* Dispositivi futuri (coming soon): opachi, in scala di grigi, non cliccabili */
 .device-card.coming-soon {
     opacity: 0.7;
     filter: grayscale(0.3);
     cursor: not-allowed;
-    pointer-events: none;
+    pointer-events: none;           /* disabilita qualsiasi interazione del mouse */
 }
+
 .device-status {
     font-size: 14px;
     margin-top: 12px;
     font-weight: 500;
 }
+
 .device-status.available {
-    color: var(--accent);
-}
-.device-status.soon {
-    color: var(--muted);
+    color: var(--accent);           /* verde per "disponibile" */
 }
 
+.device-status.soon {
+    color: var(--muted);            /* grigio per "prossimamente" */
+}
 
 /* Icona del dispositivo (emoji) */
 .device-icon {
