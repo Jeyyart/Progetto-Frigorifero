@@ -1,13 +1,4 @@
-console.log('✅ scriptDashboardMobile.js caricato - con verifica autorizzazione');
-
-const response = await fetch("/api/verifica", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ 
-        userId: user.email, 
-        fridgeId: currentDeviceId 
-    })
-});
+console.log('✅ scriptDashboardMobile.js caricato - con proxy API POST');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -32,9 +23,9 @@ if (!idParam || !idParam.startsWith('FRG-')) {
 console.log(`Device ID: ${currentDeviceId}`);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const API_VERIFICA = "https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php";
+const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE ==========
+// ========== VERIFICA AUTORIZZAZIONE (POST al proxy) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -44,29 +35,28 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const response = await fetch("/api/verifica", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                userId: user.email, 
-                fridgeId: currentDeviceId 
-            })
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.email, fridgeId: currentDeviceId })
         });
         const data = await response.json();
-        
+        console.log("Risposta autorizzazione mobile:", data);
         if (data.authorized === true) return true;
         
-        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        let errore = data.error || "Non autorizzato";
+        alert(`❌ ${errore}\n\nUtente: ${user.email}\nFrigo: ${currentDeviceId}`);
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
-        console.error("Errore verifica autorizzazione:", err);
+        console.error("Errore verifica mobile:", err);
         alert("Errore di connessione al server. Riprova più tardi.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     }
 }
 
+// ========== UTILITÀ ==========
 function showUserError(msg) {
     const statusDiv = document.getElementById('apiStatus');
     if (statusDiv) {
@@ -123,6 +113,7 @@ function getTodayEvents(readings) {
                   .map(ev => ({ time: ev.timestamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), action: ev.changedTo }));
 }
 
+// ========== AGGIORNAMENTO UI ==========
 function updateMetrics(readings) {
     if (!readings.length) return;
     let latest = readings[readings.length-1];
@@ -157,6 +148,7 @@ function updateTimeline() {
     container.innerHTML = `<div class="timeline-events-list">${events.map(ev => `<div class="timeline-event">${ev.time} – ${ev.action === 'aperta' ? '🚪 Aperta' : '🚪 Chiusa'}</div>`).join('')}</div>`;
 }
 
+// ========== MOCK DINAMICO (FALLBACK) ==========
 function generateDynamicMock(deviceId) {
     console.warn(`⚠️ Fallback dinamico per ${deviceId}`);
     let now = Date.now();
@@ -192,7 +184,7 @@ async function fetchAndUpdate() {
     updateTimeline();
 }
 
-// Modello 3D
+// ========== MODELLO 3D ==========
 function centerModel(model) {
     let box = new THREE.Box3().setFromObject(model);
     let center = box.getCenter(new THREE.Vector3());
@@ -241,6 +233,7 @@ function init3D() {
     setTimeout(() => { if(!modelsLoaded) { console.warn('Modelli 3D non caricati, uso chiuso'); modelsLoaded=true; switchModel(pendingDoorState); updateCameraZoom(pendingDoorState); } }, 5000);
 }
 
+// ========== GRAFICO ==========
 function initChart() {
     let ctx = document.getElementById('dataChart').getContext('2d');
     chart = new Chart(ctx, {
@@ -285,6 +278,7 @@ function addSwipeListener() {
     });
 }
 
+// ========== INIZIALIZZAZIONE ==========
 async function initAll() {
     const authorized = await checkAuthorization();
     if (!authorized) return;

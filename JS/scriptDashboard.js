@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - con proxy API');
+console.log('✅ scriptDashboard.js CARICATO - con proxy API POST');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -17,9 +17,9 @@ if (!currentDeviceId) {
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const PROXY_URL = '/api/verifica';  // <-- usa il proxy locale
+const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE (tramite proxy) ==========
+// ========== VERIFICA AUTORIZZAZIONE (POST al proxy) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -29,15 +29,21 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const response = await fetch(`${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`);
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.email, fridgeId: currentDeviceId })
+        });
         const data = await response.json();
+        console.log("Risposta autorizzazione:", data);
         if (data.authorized === true) return true;
         
-        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        let errore = data.error || "Non autorizzato";
+        alert(`❌ ${errore}\n\nUtente: ${user.email}\nFrigo: ${currentDeviceId}`);
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
-        console.error("Errore verifica autorizzazione:", err);
+        console.error("Errore verifica:", err);
         alert("Errore di connessione al server. Riprova più tardi.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;

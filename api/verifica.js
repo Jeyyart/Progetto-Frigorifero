@@ -1,31 +1,37 @@
-async function checkAuthorization() {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (!user) {
-        window.location.href = '../HTML/registro.html';
-        return false;
-    }
-    if (user.isAdmin) return true;
+export default async function handler(req, res) {
+  // Imposta CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // LOG: mostriamo cosa stiamo inviando
-    console.log("Verifica autorizzazione per:", user.email, "fridge:", currentDeviceId);
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-    try {
-        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        console.log("Risposta API verifica:", data);   // <-- fondamentale
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
 
-        if (data.authorized === true) return true;
-        
-        // Mostra il messaggio specifico restituito dall'API
-        let errore = data.error || "Non autorizzato";
-        alert(`❌ ${errore}\n\nUserId inviato: ${user.email}\nFrigo: ${currentDeviceId}`);
-        window.location.href = '../HTML/SelezioneDispositivo.html';
-        return false;
-    } catch (err) {
-        console.error("Errore verifica:", err);
-        alert("Errore di connessione al server. Riprova più tardi.");
-        window.location.href = '../HTML/SelezioneDispositivo.html';
-        return false;
-    }
+  const { userId, fridgeId } = req.body;
+  if (!userId || !fridgeId) {
+    res.status(400).json({ error: 'Missing userId or fridgeId' });
+    return;
+  }
+
+  const targetUrl = 'https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php';
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, fridgeId })
+    });
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (err) {
+    console.error('Proxy error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
 }
