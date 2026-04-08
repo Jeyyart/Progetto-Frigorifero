@@ -1,4 +1,4 @@
-// scriptScanTelefono.js - con verifica associazione e gestione errori di rete
+// scriptScanTelefono.js - con verifica associazione tramite email (case‑insensitive)
 
 let html5QrCode = null;
 let currentScannedFridgeId = null;
@@ -68,18 +68,18 @@ async function verificaUtenteEAutorizza(fridgeId) {
         return;
     }
 
-    // 3. Chiamata API con timeout e gestione errori
+    // 3. Chiamata API con timeout – usiamo l'email (case‑insensitive nel DB)
     showTemporaryMessage("Verifica autorizzazione in corso...", false);
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondi
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
         const response = await fetch(API_VERIFICA_ASSOCIAZIONE, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                userId: currentUser.nickname,
+                userId: currentUser.email,   // <-- USARE L'EMAIL, NON IL NICKNAME
                 fridgeId: fridgeId
             }),
             signal: controller.signal
@@ -91,13 +91,15 @@ async function verificaUtenteEAutorizza(fridgeId) {
         }
 
         const data = await response.json();
-        console.log("Risposta API:", data);
+        console.log("Risposta API verifica:", data);
         
         if (data.authorized === true) {
             stopScanner();
             window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         } else {
-            showTemporaryMessage("❌ Il tuo account non è autorizzato per questo frigorifero", false);
+            // L'API ha risposto con authorized: false (utente non trovato o non associato)
+            let errorMsg = data.error || "Il tuo account non è autorizzato per questo frigorifero";
+            showTemporaryMessage(`❌ ${errorMsg}`, false);
             setTimeout(() => {
                 window.location.href = '../HTML/ScanTelefono.html';
             }, 3000);

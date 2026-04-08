@@ -35,10 +35,13 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const response = await fetch(API_VERIFICA, {
+        const response = await fetch("https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.nickname, fridgeId: currentDeviceId })
+            body: JSON.stringify({ 
+                userId: user.email,   // <-- USARE EMAIL
+                fridgeId: currentDeviceId 
+            })
         });
         const data = await response.json();
         if (data.authorized === true) return true;
