@@ -131,10 +131,10 @@ async function loginUser(identifier, password) {
 
 // ========== REDIRECT DOPO LOGIN (supporta il ritorno da FridgeAuth) ==========
 function redirectAfterLogin() {
-    const redirectAfterAuth = localStorage.getItem('redirectAfterAuth');
-    if (redirectAfterAuth) {
-        localStorage.removeItem('redirectAfterAuth');
-        window.location.href = redirectAfterAuth;
+    const redirect = localStorage.getItem('redirectAfterLogin');
+    if (redirect) {
+        localStorage.removeItem('redirectAfterLogin');
+        window.location.href = redirect;
     } else {
         window.location.href = '../HTML/SelezioneDispositivo.html';
     }
@@ -181,21 +181,16 @@ registroButton.addEventListener('click', async () => {
     const identifier = document.getElementById('identifier').value.trim();
 
     // Login speciale per amministratore hardcoded (non va all'API)
-    if (identifier === '#admin' && password === 'admin123') {
-        localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
-        redirectAfterLogin();
-        return;
-    }
+ if (identifier === '#admin' && password === 'admin123') {
+    localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
+    redirectAfterLogin();
+}
 
     const result = await loginUser(identifier, password);
-    if (result.success) {
-        localStorage.setItem('currentUser', JSON.stringify({
-            nickname: result.nickname,
-            email: result.email,
-            isAdmin: result.isAdmin
-        }));
-        redirectAfterLogin();
-    } else {
+   if (result.success) {
+    localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: false }));
+    redirectAfterLogin();
+} else {
         showError(result.message || '❌ Credenziali errate');
     }
 });

@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboardMobile.js caricato - redirect automatico');
+console.log('✅ scriptDashboardMobile.js - verifica autorizzazione');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -14,7 +14,6 @@ const closedCameraZ = 18.0, openCameraZ = 23.0, cameraY = 2.2, modelYOffset = 1.
 const urlParams = new URLSearchParams(window.location.search);
 let idParam = urlParams.get('id');
 if (!idParam || !idParam.startsWith('FRG-')) {
-    console.warn(`ID non valido: "${idParam}", uso FRG-001`);
     currentDeviceId = "FRG-001";
 } else {
     currentDeviceId = idParam;
@@ -24,33 +23,32 @@ console.log(`Device ID: ${currentDeviceId}`);
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA E REDIRECT IMMEDIATO ==========
-async function checkAndRedirect() {
+// ========== VERIFICA AUTORIZZAZIONE ==========
+async function requireAuthAndAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    
     if (!user) {
-        // Non loggato: vai a FridgeAuth
-        window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
+        localStorage.setItem('pendingFridgeId', currentDeviceId);
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        window.location.href = '../HTML/registro.html';
         return false;
     }
-    
     if (user.isAdmin) return true;
-    
     try {
         const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch(url);
         const data = await response.json();
         if (data.authorized === true) return true;
-        else {
-            window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
-            return false;
-        }
+        alert("❌ Non sei autorizzato per questo frigorifero.");
+        window.location.href = '../HTML/SelezioneDispositivo.html';
+        return false;
     } catch (err) {
         console.error("Errore verifica:", err);
-        window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
+        alert("❌ Errore di connessione al server. Riprova più tardi.");
+        window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     }
 }
+
 // ========== UTILITÀ ==========
 function showUserError(msg) {
     const statusDiv = document.getElementById('apiStatus');
@@ -270,18 +268,16 @@ function addSwipeListener() {
 }
 
 async function initAll() {
-    const ok = await checkAndRedirect();
+    const ok = await requireAuthAndAuthorization();
     if (!ok) return;
 
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
-    
     let name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-    // Admin panel (opzionale)
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {
