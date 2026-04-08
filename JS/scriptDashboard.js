@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - con verifica autorizzazione (proxy)');
+console.log('✅ scriptDashboard.js CARICATO - versione originale');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -17,9 +17,9 @@ if (!currentDeviceId) {
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const PROXY_URL = '/api/verifica';
+const VERIFY_API = 'https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php';
 
-// ========== VERIFICA AUTORIZZAZIONE (tramite proxy) ==========
+// ========== VERIFICA AUTORIZZAZIONE (chiamata diretta) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -29,9 +29,10 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const url = `${VERIFY_API}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url);
         const data = await response.json();
+        console.log("Risposta autorizzazione desktop:", data);
         if (data.authorized === true) return true;
         
         alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
@@ -44,7 +45,6 @@ async function checkAuthorization() {
         return false;
     }
 }
-
 // ========== TUTTE LE FUNZIONI ORIGINALI (invariate) ==========
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }

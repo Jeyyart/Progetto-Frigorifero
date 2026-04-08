@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboardMobile.js - verifica autorizzazione');
+console.log('✅ scriptDashboardMobile.js - verifica tramite proxy');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -18,32 +18,33 @@ if (!idParam || !idParam.startsWith('FRG-')) {
 } else {
     currentDeviceId = idParam;
 }
-console.log(`Device ID: ${currentDeviceId}`);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE ==========
-async function requireAuthAndAuthorization() {
+// ========== VERIFICA AUTORIZZAZIONE (tramite proxy) ==========
+async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
-        localStorage.setItem('pendingFridgeId', currentDeviceId);
         localStorage.setItem('redirectAfterLogin', window.location.href);
         window.location.href = '../HTML/registro.html';
         return false;
     }
     if (user.isAdmin) return true;
+
     try {
         const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url);
         const data = await response.json();
+        console.log("Risposta autorizzazione mobile:", data);
         if (data.authorized === true) return true;
-        alert("❌ Non sei autorizzato per questo frigorifero.");
+        
+        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
         console.error("Errore verifica:", err);
-        alert("❌ Errore di connessione al server. Riprova più tardi.");
+        alert("Errore di connessione al server. Riprova più tardi.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     }
@@ -268,8 +269,8 @@ function addSwipeListener() {
 }
 
 async function initAll() {
-    const ok = await requireAuthAndAuthorization();
-    if (!ok) return;
+    const authorized = await checkAuthorization();
+    if (!authorized) return;
 
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
@@ -278,6 +279,7 @@ async function initAll() {
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
+    // Admin panel mobile (opzionale)
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {

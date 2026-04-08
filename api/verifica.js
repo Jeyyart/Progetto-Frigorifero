@@ -1,4 +1,3 @@
-// api/verifica.js
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -16,17 +15,18 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(backendUrl);
     const text = await response.text();
-    // Tenta di parsare come JSON
+    // Prova a parsare JSON
     try {
       const data = JSON.parse(text);
-      return res.status(response.status).json(data);
+      // Assicurati che la proprietà 'authorized' sia presente
+      return res.status(response.status).json({ authorized: data.authorized === true, error: data.error });
     } catch (e) {
-      // Il backend ha restituito HTML (errore) – restituiamo un errore JSON
-      console.error('Backend ha restituito HTML:', text.substring(0, 200));
-      return res.status(502).json({ error: 'Backend error', authorized: false });
+      console.error('Backend ha restituito non-JSON:', text.substring(0, 200));
+      // In caso di errore, restituisci authorized: false
+      return res.status(502).json({ authorized: false, error: 'Backend response invalid' });
     }
   } catch (err) {
     console.error('Proxy error:', err);
-    return res.status(500).json({ error: 'Proxy error: ' + err.message, authorized: false });
+    return res.status(500).json({ authorized: false, error: 'Proxy error: ' + err.message });
   }
 }
