@@ -104,10 +104,10 @@ async function registerUser(nickname, email, password) {
     }
 }
 
-// ========== LOGIN TRAMITE API ==========
+// ========== LOGIN TRAMITE API (atteso JSON) ==========
 async function loginUser(identifier, password) {
     const formData = new URLSearchParams();
-    formData.append("email", identifier);   // L'API access.php si aspetta "email"
+    formData.append("email", identifier);
     formData.append("password", password);
 
     const response = await fetch(`${API_BASE}/access.php`, {
@@ -116,7 +116,6 @@ async function loginUser(identifier, password) {
         body: formData.toString()
     });
 
-    // Il server restituisce JSON (dopo la modifica)
     const data = await response.json();
     if (data.success) {
         return {
@@ -130,7 +129,7 @@ async function loginUser(identifier, password) {
     }
 }
 
-// ========== REINDIRIZZAMENTO POST-LOGIN ==========
+// ========== REDIRECT DOPO LOGIN (supporta il ritorno da FridgeAuth) ==========
 function redirectAfterLogin() {
     const redirectAfterAuth = localStorage.getItem('redirectAfterAuth');
     if (redirectAfterAuth) {
@@ -182,16 +181,21 @@ registroButton.addEventListener('click', async () => {
     const identifier = document.getElementById('identifier').value.trim();
 
     // Login speciale per amministratore hardcoded (non va all'API)
-if (identifier === '#admin' && password === 'admin123') {
-    localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
-    redirectAfterLogin();
-}
+    if (identifier === '#admin' && password === 'admin123') {
+        localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
+        redirectAfterLogin();
+        return;
+    }
 
     const result = await loginUser(identifier, password);
-if (result.success) {
-    localStorage.setItem('currentUser', JSON.stringify({ nickname: result.nickname, email: result.email, isAdmin: false }));
-    redirectAfterLogin();
-}else {
+    if (result.success) {
+        localStorage.setItem('currentUser', JSON.stringify({
+            nickname: result.nickname,
+            email: result.email,
+            isAdmin: result.isAdmin
+        }));
+        redirectAfterLogin();
+    } else {
         showError(result.message || '❌ Credenziali errate');
     }
 });

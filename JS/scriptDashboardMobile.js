@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboardMobile.js caricato - verifica autorizzazione');
+console.log('✅ scriptDashboardMobile.js caricato - redirect automatico');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -24,37 +24,42 @@ console.log(`Device ID: ${currentDeviceId}`);
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE ==========
-async function checkAuthorizationAndRedirect() {
+// ========== VERIFICA E REDIRECT SILENZIOSO ==========
+async function checkAndRedirect() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    const fridgeId = currentDeviceId;
-
-    // Se non loggato, reindirizza a FridgeAuth (che gestirà login)
+    
+    // Se non loggato, redirect a FridgeAuth
     if (!user) {
-        window.location.href = `../HTML/FridgeAuth.html?id=${fridgeId}`;
+        window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
         return false;
     }
-
-    // Admin bypassa verifica
+    
+    // Admin prosegue
     if (user.isAdmin) return true;
-
+    
+    // Controlla se già autorizzato in questa sessione
+    const alreadyAuthorized = sessionStorage.getItem(`authorized_${currentDeviceId}`);
+    if (alreadyAuthorized === 'true') return true;
+    
+    // Altrimenti chiama API
     try {
-        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
-        if (data.authorized === true) return true;
-
-        // Non autorizzato → reindirizza a FridgeAuth (mostrerà errore)
-        window.location.href = `../HTML/FridgeAuth.html?id=${fridgeId}`;
-        return false;
+        if (data.authorized === true) {
+            sessionStorage.setItem(`authorized_${currentDeviceId}`, 'true');
+            return true;
+        } else {
+            // Non autorizzato → FridgeAuth mostrerà errore
+            window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
+            return false;
+        }
     } catch (err) {
         console.error("Errore verifica:", err);
-        // In caso di errore di rete, reindirizza comunque a FridgeAuth per tentare di nuovo
-        window.location.href = `../HTML/FridgeAuth.html?id=${fridgeId}`;
+        window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
         return false;
     }
 }
-
 // ========== UTILITÀ ==========
 function showUserError(msg) {
     const statusDiv = document.getElementById('apiStatus');
@@ -274,11 +279,12 @@ function addSwipeListener() {
 }
 
 async function initAll() {
-    const authorized = await checkAuthorizationAndRedirect();
-    if (!authorized) return; // se false, il redirect è già avvenuto
+    const ok = await checkAndRedirect();
+    if (!ok) return; // redirect già avvenuto
 
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if(!currentUser) { window.location.href = '../HTML/registro.html'; return; }
+    if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
+    
     let name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
@@ -289,7 +295,7 @@ async function initAll() {
         if (adminPanel) {
             adminPanel.style.display = 'block';
             const selectEl = document.getElementById('adminIdSelectMobile');
-            selectEl.innerHTML = `<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>`;
+            selectEl.innerHTML = `<option value="FRG-001">FRG-001</option><option value="FRG-TEMPLATE">FRG-TEMPLATE</option>`;
             if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
             else selectEl.value = 'FRG-001';
             selectEl.onchange = () => { window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`; };
