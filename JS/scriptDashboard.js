@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO - layout originale ripristinato');
+console.log('✅ scriptDashboard.js CARICATO - layout originale ripristinato con verifica autorizzazione');
 
 // ========== VARIABILI GLOBALI ==========
 let chart = null;
@@ -27,6 +27,36 @@ if (!currentDeviceId) {
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
+const API_VERIFICA = "https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php";
+
+// ========== VERIFICA AUTORIZZAZIONE ==========
+async function checkAuthorization() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) {
+        window.location.href = '../HTML/registro.html';
+        return false;
+    }
+    if (user.isAdmin) return true;
+
+    try {
+        const response = await fetch(API_VERIFICA, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.nickname, fridgeId: currentDeviceId })
+        });
+        const data = await response.json();
+        if (data.authorized === true) return true;
+        
+        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        window.location.href = '../HTML/SelezioneDispositivo.html';
+        return false;
+    } catch (err) {
+        console.error("Errore verifica autorizzazione:", err);
+        alert("Errore di connessione al server. Riprova più tardi.");
+        window.location.href = '../HTML/SelezioneDispositivo.html';
+        return false;
+    }
+}
 
 // ========== UTILITÀ ==========
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
@@ -288,52 +318,55 @@ function addSwipeListener() {
 }
 
 // ========== INIZIALIZZAZIONE ==========
-function initAll() {
-  currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  if(!currentUser) return window.location.href = '../HTML/registro.html';
-  const name = currentUser.nickname || 'Utente';
-  document.getElementById('userNameHeader').textContent = name;
-  document.getElementById('userNameHeader2').textContent = name;
-  document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
+async function initAll() {
+    const authorized = await checkAuthorization();
+    if (!authorized) return;
 
-  initChart();
-  addTabListeners();
-  addSwipeListener();
-  init3D();
-  fetchAndUpdate();
-  setInterval(fetchAndUpdate, 30000);
+    currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const name = currentUser.nickname || 'Utente';
+    document.getElementById('userNameHeader').textContent = name;
+    document.getElementById('userNameHeader2').textContent = name;
+    document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-  const themeBtn = document.getElementById('themeToggleBtn');
-  let theme = localStorage.getItem('nexoraTheme') || 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
-  themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
-  themeBtn.addEventListener('click', () => {
-    theme = theme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('nexoraTheme', theme);
+    initChart();
+    addTabListeners();
+    addSwipeListener();
+    init3D();
+    fetchAndUpdate();
+    setInterval(fetchAndUpdate, 30000);
+
+    const themeBtn = document.getElementById('themeToggleBtn');
+    let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
-  });
+    themeBtn.addEventListener('click', () => {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('nexoraTheme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+        themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
 
-  document.getElementById('logoutBtn').addEventListener('click', window.logout);
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        window.location.href = '../HTML/registro.html';
+    });
 
-if (currentUser.isAdmin) {
-    document.getElementById('adminPanel').style.display = 'block';
-    const selectEl = document.getElementById('adminIdSelect');
-    selectEl.innerHTML = `
-      <option value="FRG-001">FRG-001 (Principale)</option>
-      <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
-    `;
-    // Se l'ID corrente è tra quelli, seleziona l'opzione corrispondente
-    if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
-        selectEl.value = currentDeviceId;
-    } else {
-        selectEl.value = 'FRG-001';
+    if (currentUser.isAdmin) {
+        document.getElementById('adminPanel').style.display = 'block';
+        const selectEl = document.getElementById('adminIdSelect');
+        selectEl.innerHTML = `
+          <option value="FRG-001">FRG-001 (Principale)</option>
+          <option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>
+        `;
+        if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') {
+            selectEl.value = currentDeviceId;
+        } else {
+            selectEl.value = 'FRG-001';
+        }
+        selectEl.onchange = () => {
+            window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`;
+        };
     }
-    // Al cambio, reindirizza alla stessa pagina con il nuovo ID
-    selectEl.onchange = () => {
-        window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`;
-    };
-}
 }
 
 window.logout = function() { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; };

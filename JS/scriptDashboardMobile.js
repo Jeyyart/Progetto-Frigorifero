@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboardMobile.js caricato');
+console.log('✅ scriptDashboardMobile.js caricato - con verifica autorizzazione');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -23,6 +23,36 @@ if (!idParam || !idParam.startsWith('FRG-')) {
 console.log(`Device ID: ${currentDeviceId}`);
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
+const API_VERIFICA = "https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php";
+
+// ========== VERIFICA AUTORIZZAZIONE ==========
+async function checkAuthorization() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) {
+        window.location.href = '../HTML/registro.html';
+        return false;
+    }
+    if (user.isAdmin) return true;
+
+    try {
+        const response = await fetch(API_VERIFICA, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.nickname, fridgeId: currentDeviceId })
+        });
+        const data = await response.json();
+        if (data.authorized === true) return true;
+        
+        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
+        window.location.href = '../HTML/SelezioneDispositivo.html';
+        return false;
+    } catch (err) {
+        console.error("Errore verifica autorizzazione:", err);
+        alert("Errore di connessione al server. Riprova più tardi.");
+        window.location.href = '../HTML/SelezioneDispositivo.html';
+        return false;
+    }
+}
 
 function showUserError(msg) {
     const statusDiv = document.getElementById('apiStatus');
@@ -242,7 +272,10 @@ function addSwipeListener() {
     });
 }
 
-function initAll() {
+async function initAll() {
+    const authorized = await checkAuthorization();
+    if (!authorized) return;
+
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if(!currentUser) { window.location.href = '../HTML/registro.html'; return; }
     let name = currentUser.nickname || 'Utente';
@@ -250,7 +283,7 @@ function initAll() {
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-    // Pannello admin mobile (identico a desktop)
+    // Pannello admin mobile
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {
@@ -290,4 +323,5 @@ function initAll() {
     });
     document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; });
 }
+
 window.onload = initAll;

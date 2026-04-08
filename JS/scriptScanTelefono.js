@@ -1,9 +1,8 @@
-// scriptScanTelefono.js - con verifica associazione via API
+// scriptScanTelefono.js - con verifica associazione e gestione errori di rete
 
 let html5QrCode = null;
 let currentScannedFridgeId = null;
 
-// URL della tua API di verifica (già pronta)
 const API_VERIFICA_ASSOCIAZIONE = "https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php";
 
 function extractFridgeIdFromText(text) {
@@ -62,40 +61,53 @@ async function verificaUtenteEAutorizza(fridgeId) {
         return;
     }
 
-    // 2. Se è admin (nickname '#admin'), autorizza senza chiamata API
+    // 2. Admin bypassa verifica
     if (currentUser.isAdmin === true) {
         stopScanner();
         window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         return;
     }
 
-    // 3. Utente normale: chiama API di verifica associazione
+    // 3. Chiamata API con timeout e gestione errori
     showTemporaryMessage("Verifica autorizzazione in corso...", false);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondi
+
     try {
         const response = await fetch(API_VERIFICA_ASSOCIAZIONE, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                userId: currentUser.nickname,   // il nickname dell'utente
+                userId: currentUser.nickname,
                 fridgeId: fridgeId
-            })
+            }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("Risposta API:", data);
         
         if (data.authorized === true) {
-            // Autorizzato → dashboard mobile
             stopScanner();
             window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         } else {
-            // Non autorizzato → errore e torna allo scanner
             showTemporaryMessage("❌ Il tuo account non è autorizzato per questo frigorifero", false);
             setTimeout(() => {
                 window.location.href = '../HTML/ScanTelefono.html';
             }, 3000);
         }
     } catch (err) {
+        clearTimeout(timeoutId);
         console.error("Errore verifica API:", err);
-        showTemporaryMessage("Errore di connessione al server. Riprova.", false);
+        let msg = "Errore di connessione al server. Riprova.";
+        if (err.name === 'AbortError') msg = "Timeout: server non risponde.";
+        showTemporaryMessage(msg, false);
         setTimeout(() => {
             window.location.href = '../HTML/ScanTelefono.html';
         }, 3000);
@@ -107,8 +119,6 @@ function onQrCodeScanned(decodedText) {
     const fridgeId = extractFridgeIdFromText(decodedText);
     
     if (fridgeId && fridgeId.startsWith("FRG-")) {
-        // Accetta qualsiasi ID (non solo FRG-001 e TEMPLATE)
-        currentScannedFridgeId = fridgeId;
         verificaUtenteEAutorizza(fridgeId);
     } else {
         showTemporaryMessage("⚠️ QR non valido. Inquadra un codice NEXORA valido (FRG-XXXX)");
@@ -148,7 +158,6 @@ function stopScanner() {
     }
 }
 
-// All'avvio: se c'è un pendingFridgeId (dopo il login), riprende la verifica
 window.onload = () => {
     const theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
