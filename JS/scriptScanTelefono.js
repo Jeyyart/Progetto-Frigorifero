@@ -53,7 +53,6 @@ function showTemporaryMessage(message, isSuccess = false) {
 async function verificaUtenteEAutorizza(fridgeId) {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     
-    // 1. Se non loggato, salva l'ID e reindirizza al login
     if (!currentUser) {
         localStorage.setItem('pendingFridgeId', fridgeId);
         localStorage.setItem('redirectAfterScan', window.location.href);
@@ -61,27 +60,22 @@ async function verificaUtenteEAutorizza(fridgeId) {
         return;
     }
 
-    // 2. Admin bypassa verifica
     if (currentUser.isAdmin === true) {
         stopScanner();
         window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         return;
     }
 
-    // 3. Chiamata API con timeout – usiamo l'email (case‑insensitive nel DB)
     showTemporaryMessage("Verifica autorizzazione in corso...", false);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-        const response = await fetch(API_VERIFICA_ASSOCIAZIONE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                userId: currentUser.email,   // <-- USARE L'EMAIL, NON IL NICKNAME
-                fridgeId: fridgeId
-            }),
+        // Richiesta GET per evitare preflight CORS
+        const url = `${API_VERIFICA_ASSOCIAZIONE}?userId=${encodeURIComponent(currentUser.email)}&fridgeId=${encodeURIComponent(fridgeId)}`;
+        const response = await fetch(url, {
+            method: "GET",
             signal: controller.signal
         });
         clearTimeout(timeoutId);
@@ -97,7 +91,6 @@ async function verificaUtenteEAutorizza(fridgeId) {
             stopScanner();
             window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
         } else {
-            // L'API ha risposto con authorized: false (utente non trovato o non associato)
             let errorMsg = data.error || "Il tuo account non è autorizzato per questo frigorifero";
             showTemporaryMessage(`❌ ${errorMsg}`, false);
             setTimeout(() => {

@@ -39,15 +39,10 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const response = await fetch("https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                userId: user.email,   // <-- USARE EMAIL
-                fridgeId: currentDeviceId 
-            })
-        });
+        const url = `https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
+        
         if (data.authorized === true) return true;
         
         alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
