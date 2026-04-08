@@ -21,17 +21,12 @@ export default async function handler(req, res) {
       const data = JSON.parse(text);
       return res.status(response.status).json(data);
     } catch (e) {
-      // Il backend ha restituito HTML (errore) – usiamo fallback
-      console.error('Backend ha restituito HTML, uso fallback');
-      // Fallback: autorizza solo FRG-001 (per test)
-      if (fridgeId === 'FRG-001') {
-        return res.status(200).json({ authorized: true });
-      } else {
-        return res.status(200).json({ authorized: false, error: 'ID non supportato (fallback)' });
-      }
+      // Il backend ha restituito HTML (errore) – restituiamo un errore JSON
+      console.error('Backend ha restituito HTML:', text.substring(0, 200));
+      return res.status(502).json({ error: 'Backend error', authorized: false });
     }
   } catch (err) {
     console.error('Proxy error:', err);
-    return res.status(500).json({ error: 'Proxy error: ' + err.message });
+    return res.status(500).json({ error: 'Proxy error: ' + err.message, authorized: false });
   }
 }

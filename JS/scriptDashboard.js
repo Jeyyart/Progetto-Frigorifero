@@ -1,4 +1,4 @@
-console.log('✅ scriptDashboard.js CARICATO (senza verifica)');
+console.log('✅ scriptDashboard.js CARICATO - con verifica autorizzazione (proxy)');
 
 let chart = null;
 let currentChartType = 'temperature';
@@ -11,12 +11,15 @@ let modelsReady = false, pendingDoorState = false;
 
 const urlParams = new URLSearchParams(window.location.search);
 currentDeviceId = urlParams.get('id');
-if (!currentDeviceId) currentDeviceId = "FRG-001";
+if (!currentDeviceId) {
+  console.warn("Nessun ID frigorifero, uso FRG-001");
+  currentDeviceId = "FRG-001";
+}
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA AUTORIZZAZIONE (GET) ==========
+// ========== VERIFICA AUTORIZZAZIONE (tramite proxy) ==========
 async function checkAuthorization() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -27,13 +30,11 @@ async function checkAuthorization() {
 
     try {
         const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch(url);
         const data = await response.json();
-        console.log("Risposta autorizzazione:", data);
         if (data.authorized === true) return true;
         
-        let errore = data.error || "Non autorizzato";
-        alert(`❌ ${errore}\n\nUtente: ${user.email}\nFrigo: ${currentDeviceId}`);
+        alert("❌ Non sei autorizzato a visualizzare questo frigorifero.");
         window.location.href = '../HTML/SelezioneDispositivo.html';
         return false;
     } catch (err) {
@@ -44,7 +45,7 @@ async function checkAuthorization() {
     }
 }
 
-// ========== TUTTE LE ALTRE FUNZIONI (invariate) ==========
+// ========== TUTTE LE FUNZIONI ORIGINALI (invariate) ==========
 function formatTime(date) { return date.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' }); }
 function parseTimestamp(ts) { return new Date(ts); }
 
@@ -272,8 +273,10 @@ function addSwipeListener() {
 }
 
 async function initAll() {
+    const authorized = await checkAuthorization();
+    if (!authorized) return;
+
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
     const name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
@@ -286,7 +289,6 @@ async function initAll() {
     fetchAndUpdate();
     setInterval(fetchAndUpdate, 30000);
 
-    // Tema e logout
     const themeBtn = document.getElementById('themeToggleBtn');
     let theme = localStorage.getItem('nexoraTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -297,16 +299,21 @@ async function initAll() {
         document.documentElement.setAttribute('data-theme', theme);
         themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
     });
+
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('currentUser');
         window.location.href = '../HTML/registro.html';
     });
+
     if (currentUser.isAdmin) {
         document.getElementById('adminPanel').style.display = 'block';
         const selectEl = document.getElementById('adminIdSelect');
-        selectEl.innerHTML = '<option value="FRG-001">FRG-001</option><option value="FRG-TEMPLATE">FRG-TEMPLATE</option>';
-        selectEl.value = currentDeviceId;
+        selectEl.innerHTML = '<option value="FRG-001">FRG-001 (Principale)</option><option value="FRG-TEMPLATE">FRG-TEMPLATE (Template di prova)</option>';
+        if (currentDeviceId === 'FRG-001' || currentDeviceId === 'FRG-TEMPLATE') selectEl.value = currentDeviceId;
+        else selectEl.value = 'FRG-001';
         selectEl.onchange = () => { window.location.href = `../HTML/Dashboard.html?id=${selectEl.value}`; };
     }
 }
+
+window.logout = function() { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; };
 window.onload = initAll;
