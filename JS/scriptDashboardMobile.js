@@ -243,14 +243,15 @@ function addSwipeListener() {
 }
 
 function initAll() {
-    currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if(!currentUser) { window.location.href = '../HTML/registro.html'; return; }
+    // Usa la variabile globale currentUser passata da PHP
+    currentUser = (typeof window.currentUser !== 'undefined') ? window.currentUser : null;
+    if(!currentUser) { window.location.href = '../PHP/registro.php'; return; }
     let name = currentUser.nickname || 'Utente';
     document.getElementById('userNameHeader').textContent = name;
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
-    // Pannello admin mobile (identico a desktop)
+    // Pannello admin mobile
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {
@@ -266,7 +267,7 @@ function initAll() {
                 selectEl.value = 'FRG-001';
             }
             selectEl.onchange = () => {
-                window.location.href = `../HTML/DashboardMobile.html?id=${selectEl.value}`;
+                window.location.href = `../PHP/DashboardMobile.php?id=${selectEl.value}`;
             };
         }
     }
@@ -288,6 +289,10 @@ function initAll() {
         document.documentElement.setAttribute('data-theme', newTheme);
         themeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
     });
-    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('currentUser'); window.location.href = '../HTML/registro.html'; });
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        fetch('../PHP/logout.php', { method: 'POST', credentials: 'include' })
+            .then(() => window.location.href = '../PHP/registro.php');
+    });
 }
+
 window.onload = initAll;

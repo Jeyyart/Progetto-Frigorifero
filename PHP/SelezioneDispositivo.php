@@ -1,48 +1,44 @@
+<?php
+require_once '../PHP/config.php';
+if (!isset($_SESSION['user'])) {
+    header('Location: registro.php');
+    exit;
+}
+$currentUser = $_SESSION['user'];
+?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXORA Smart Fridge - Scegli Dispositivo</title>
-    <!-- Foglio di stile per il design della pagina di selezione dispositivo -->
     <link rel="stylesheet" href="../CSS/styleSelezione.css">
-    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Script JavaScript (gestisce utente, tema, selezione dispositivo, logout) -->
+    <script>
+        // Passa i dati dell'utente dalla sessione PHP al JS
+        const currentUser = <?php echo json_encode($currentUser); ?>;
+    </script>
     <script src="../JS/scriptSelezione.js" defer></script>
 </head>
 <body>
-    <!-- CONTENITORE PRINCIPALE: usa flexbox per organizzare header e contenuto -->
     <div class="containerSito">
-        <!-- HEADER FISSO IN ALTO: logo, pulsante tema, logout, nome utente -->
         <div class="header">
             <div class="header-left">
                 <div class="logo-placeholder">
-                    <!-- Logo NEXORA -->
                     <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
                     <h1>NEXORA Smart Fridge</h1>
                 </div>
             </div>
             <div class="header-right">
-                <!-- Pulsante per cambiare tema (scuro/chiaro) -->
                 <button id="themeToggleBtn" class="theme-toggle-global">☀️</button>
-                <!-- Pulsante di logout: chiama la funzione logout() definita in scriptSelezione.js -->
                 <button onclick="logout()" class="logout-btn">ESCI</button>
-                <!-- Contenitore per mostrare il nome utente corrente (con icona) -->
                 <div id="userDisplay" class="user-display">👤 <span id="userNameHeader"></span></div>
             </div>
         </div>
-
-        <!-- CONTENUTO CENTRALE: messaggio di benvenuto e griglia di dispositivi -->
         <div class="main-content">
-            <!-- Messaggio di benvenuto personalizzato con il nome dell'utente -->
             <p id="greetingText" class="greeting">Ciao <span id="userNameHeader2"></span>, scegli il dispositivo</p>
-            
-            <!-- Griglia di card: ogni card rappresenta un dispositivo (Frigo, Forno, Microonde, Tostapane) -->
             <div class="devices-grid">
-                <!-- Al click su una card, viene chiamata selectDevice() (definita in JS) -->
                 <div class="device-card active" onclick="selectDevice()">
                     <div class="device-icon">❄️</div>
                     <h2>Frigorifero</h2>

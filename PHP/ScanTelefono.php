@@ -1,44 +1,38 @@
+<?php
+require_once '../PHP/config.php';
+if (!isset($_SESSION['user'])) {
+    header('Location: registro.php');
+    exit;
+}
+// Non serve passare currentUser perché questa pagina è solo scanner
+?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport ottimizzato per mobile: disabilita zoom, si adatta alla copertura del display (utile per notch/barre) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXORA Smart Fridge - Scanner</title>
-    <!-- Foglio di stile specifico per la pagina di scansione QR -->
     <link rel="stylesheet" href="../CSS/styleScanTelefono.css">
-    <!-- Font moderno da Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Icona della pagina (favicon) -->
     <link rel="icon" type="image/png" href="../IMG/logo.png">
-    <!-- Libreria esterna HTML5-QRCode: permette di leggere QR code dalla fotocamera del telefono -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- Script JavaScript personalizzato per la logica di scansione -->
     <script src="../JS/scriptScanTelefono.js" defer></script>
 </head>
 <body>
-    <!-- Contenitore principale della pagina di scansione -->
     <div class="scan-container">
-        <!-- Header con logo e nome app -->
         <div class="header-scan">
             <img src="../IMG/logo.png" alt="NEXORA" class="logo-img">
             <h1>NEXORA Smart Fridge</h1>
         </div>
-
-        <!-- Sezione centrale: contiene il lettore QR e i pulsanti -->
         <div class="scan-main">
-            <!-- Riquadro dove verrà visualizzato il flusso della fotocamera -->
             <div class="qr-reader-box">
-                <div id="qr-reader"></div>   <!-- Il contenitore verrà utilizzato dalla libreria html5-qrcode -->
+                <div id="qr-reader"></div>
             </div>
-            <!-- Pulsanti per avviare e fermare lo scanner -->
             <div class="scan-controls">
                 <button onclick="startScanner()" id="scanBtnScan" class="registroButton">📷 Avvia Scanner</button>
                 <button onclick="stopScanner()" id="stopBtnScan" class="registroButton stop-btn" style="display:none;">⏹️ Ferma Scanner</button>
             </div>
         </div>
-
-        <!-- Testo informativo per l'utente -->
         <p class="scan-hint">Inquadra il QR del frigorifero</p>
     </div>
 </body>

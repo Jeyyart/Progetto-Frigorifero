@@ -1,3 +1,11 @@
+<?php
+require_once '../PHP/config.php';
+if (!isset($_SESSION['user'])) {
+    header('Location: registro.php');
+    exit;
+}
+$currentUser = $_SESSION['user'];
+?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -10,6 +18,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        const currentUser = <?php echo json_encode($currentUser); ?>;
+    </script>
     <script src="../JS/scriptDashboardMobile.js" defer></script>
 </head>
 <body>
@@ -35,13 +46,10 @@
                     </div>
                 </div>
                 <p class="greeting">Ciao <span id="userNameHeader2"></span>, monitoraggio in tempo reale</p>
-
-                <!-- Pannello admin (inizialmente nascosto) -->
                 <div id="adminPanelMobile" style="display:none; margin-bottom:15px; text-align:center;">
                     <label style="font-weight:600; margin-right:8px;">🔑 Modalità Admin – Seleziona ID:</label>
                     <select id="adminIdSelectMobile" class="admin-select-mobile"></select>
                 </div>
-
                 <div id="apiStatus" style="margin-bottom: 10px; font-size: 12px; text-align: center; color: var(--accent);"></div>
                 <div class="metrics-grid">
                     <div class="metric-card">
