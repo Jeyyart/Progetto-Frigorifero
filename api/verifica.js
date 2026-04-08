@@ -9,24 +9,18 @@ export default async function handler(req, res) {
   if (!userId || !fridgeId) {
     return res.status(400).json({ error: 'Missing userId or fridgeId' });
   }
-
   const backendUrl = `https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php?userId=${encodeURIComponent(userId)}&fridgeId=${encodeURIComponent(fridgeId)}`;
-  
   try {
     const response = await fetch(backendUrl);
     const text = await response.text();
-    // Prova a parsare JSON
     try {
       const data = JSON.parse(text);
-      // Assicurati che la proprietà 'authorized' sia presente
-      return res.status(response.status).json({ authorized: data.authorized === true, error: data.error });
+      return res.status(response.status).json(data);
     } catch (e) {
-      console.error('Backend ha restituito non-JSON:', text.substring(0, 200));
-      // In caso di errore, restituisci authorized: false
-      return res.status(502).json({ authorized: false, error: 'Backend response invalid' });
+      console.error('Backend non-JSON:', text.substring(0,200));
+      return res.status(502).json({ authorized: false, error: 'Invalid backend response' });
     }
   } catch (err) {
-    console.error('Proxy error:', err);
-    return res.status(500).json({ authorized: false, error: 'Proxy error: ' + err.message });
+    return res.status(500).json({ authorized: false, error: err.message });
   }
 }

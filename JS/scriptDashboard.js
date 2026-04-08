@@ -17,7 +17,7 @@ if (!currentDeviceId) {
 }
 
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
-const VERIFY_API = 'https://phpusersbytolentino-production.up.railway.app/verifica_associazione.php';
+const PROXY_URL = '/api/verifica';
 
 // ========== VERIFICA AUTORIZZAZIONE (chiamata diretta) ==========
 async function checkAuthorization() {
@@ -29,7 +29,7 @@ async function checkAuthorization() {
     if (user.isAdmin) return true;
 
     try {
-        const url = `${VERIFY_API}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
+        const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url);
         const data = await response.json();
         console.log("Risposta autorizzazione desktop:", data);
