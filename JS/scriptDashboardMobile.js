@@ -24,33 +24,24 @@ console.log(`Device ID: ${currentDeviceId}`);
 const API_URL = 'https://fridge-iot-production.up.railway.app/api/getFridgeDetails';
 const PROXY_URL = '/api/verifica';
 
-// ========== VERIFICA E REDIRECT SILENZIOSO ==========
+// ========== VERIFICA E REDIRECT IMMEDIATO ==========
 async function checkAndRedirect() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     
-    // Se non loggato, redirect a FridgeAuth
     if (!user) {
+        // Non loggato: vai a FridgeAuth
         window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
         return false;
     }
     
-    // Admin prosegue
     if (user.isAdmin) return true;
     
-    // Controlla se già autorizzato in questa sessione
-    const alreadyAuthorized = sessionStorage.getItem(`authorized_${currentDeviceId}`);
-    if (alreadyAuthorized === 'true') return true;
-    
-    // Altrimenti chiama API
     try {
         const url = `${PROXY_URL}?userId=${encodeURIComponent(user.email)}&fridgeId=${encodeURIComponent(currentDeviceId)}`;
         const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
-        if (data.authorized === true) {
-            sessionStorage.setItem(`authorized_${currentDeviceId}`, 'true');
-            return true;
-        } else {
-            // Non autorizzato → FridgeAuth mostrerà errore
+        if (data.authorized === true) return true;
+        else {
             window.location.href = `../HTML/FridgeAuth.html?id=${currentDeviceId}`;
             return false;
         }
@@ -280,7 +271,7 @@ function addSwipeListener() {
 
 async function initAll() {
     const ok = await checkAndRedirect();
-    if (!ok) return; // redirect già avvenuto
+    if (!ok) return;
 
     currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { window.location.href = '../HTML/registro.html'; return; }
@@ -290,6 +281,7 @@ async function initAll() {
     document.getElementById('userNameHeader2').textContent = name;
     document.getElementById('userDisplay').innerHTML = `👤 ${name}`;
 
+    // Admin panel (opzionale)
     if (currentUser.isAdmin) {
         const adminPanel = document.getElementById('adminPanelMobile');
         if (adminPanel) {

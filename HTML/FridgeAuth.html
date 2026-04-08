@@ -62,6 +62,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const fridgeId = urlParams.get('id');
 
+        // Ogni volta che si apre questa pagina, cancelliamo l'utente precedente
+        // in modo da richiedere sempre l'accesso
+        localStorage.removeItem('currentUser');
+
         if (!fridgeId || !fridgeId.startsWith('FRG-')) {
             mostraMessaggio("ID frigorifero non valido", "error");
             document.getElementById('actionButton').innerHTML = '<button onclick="window.location.href=\'SelezioneDispositivo.html\'">Torna alla selezione</button>';
@@ -70,17 +74,17 @@
         }
 
         async function avviaVerifica(fridgeId) {
+            // Dopo la rimozione, l'utente non è loggato
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             
             if (!currentUser) {
-                localStorage.setItem('pendingFridgeId', fridgeId);
+                // Salva il redirect e vai al login
                 localStorage.setItem('redirectAfterAuth', window.location.href);
                 window.location.href = '../HTML/registro.html';
                 return;
             }
 
             if (currentUser.isAdmin === true) {
-                sessionStorage.setItem(`authorized_${fridgeId}`, 'true');
                 window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
                 return;
             }
@@ -92,7 +96,6 @@
                 const data = await response.json();
                 
                 if (data.authorized === true) {
-                    sessionStorage.setItem(`authorized_${fridgeId}`, 'true');
                     window.location.href = `../HTML/DashboardMobile.html?id=${fridgeId}`;
                 } else {
                     const errore = data.error || "Non autorizzato";
