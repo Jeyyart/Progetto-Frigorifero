@@ -2,7 +2,7 @@
 let isLoginMode = true;
 let successTimeout = null;
 
-// URL base dell'API (stesso backend usato in register.php)
+// URL base dell'API (stesso backend usato in register.php e access.php)
 const API_BASE = "https://phpusersbytolentino-production.up.railway.app";
 
 // Riferimenti agli elementi HTML
@@ -116,6 +116,7 @@ async function loginUser(identifier, password) {
         body: formData.toString()
     });
 
+    // Il server restituisce JSON (dopo la modifica)
     const data = await response.json();
     if (data.success) {
         return {
@@ -126,6 +127,17 @@ async function loginUser(identifier, password) {
         };
     } else {
         return { success: false, message: data.message || "Credenziali errate" };
+    }
+}
+
+// ========== REINDIRIZZAMENTO POST-LOGIN ==========
+function redirectAfterLogin() {
+    const redirectAfterScan = localStorage.getItem('redirectAfterScan');
+    if (redirectAfterScan) {
+        localStorage.removeItem('redirectAfterScan');
+        window.location.href = redirectAfterScan;
+    } else {
+        window.location.href = '../HTML/SelezioneDispositivo.html';
     }
 }
 
@@ -172,7 +184,7 @@ registroButton.addEventListener('click', async () => {
     // Login speciale per amministratore hardcoded (non va all'API)
     if (identifier === '#admin' && password === 'admin123') {
         localStorage.setItem('currentUser', JSON.stringify({ nickname: '#admin', isAdmin: true }));
-        window.location.href = '../HTML/SelezioneDispositivo.html';
+        redirectAfterLogin();
         return;
     }
 
@@ -183,7 +195,7 @@ registroButton.addEventListener('click', async () => {
             email: result.email,
             isAdmin: result.isAdmin
         }));
-        window.location.href = '../HTML/SelezioneDispositivo.html';
+        redirectAfterLogin();
     } else {
         showError(result.message || '❌ Credenziali errate');
     }
